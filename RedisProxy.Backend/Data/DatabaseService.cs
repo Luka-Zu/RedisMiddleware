@@ -103,4 +103,45 @@ public class DatabaseService
         // Dapper executes this as a batch automatically
         await connection.ExecuteAsync(sql, logs);
     }
+    
+    public async Task<IEnumerable<ServerMetricLog>> GetServerMetricsSinceAsync(DateTime since)
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+        var sql = @"
+            SELECT 
+                timestamp, 
+                used_cpu_sys as UsedCpuSys, 
+                used_cpu_user as UsedCpuUser, 
+                used_memory as UsedMemory, 
+                connected_clients as ConnectedClients,
+                ops_per_sec as OpsPerSec
+            FROM server_metrics 
+            WHERE timestamp >= @Since
+            ORDER BY timestamp ASC
+            LIMIT 10000";         
+
+        return await connection.QueryAsync<ServerMetricLog>(sql, new { Since = since });
+    }
+
+    // 2. Fetch Request Logs (Table Data) since a specific time
+    public async Task<IEnumerable<RequestLog>> GetRequestLogsSinceAsync(DateTime since)
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+        var sql = @"
+            SELECT 
+                timestamp, 
+                command, 
+                key_name as Key, 
+                latency_ms as LatencyMs, 
+                is_success as IsSuccess, 
+                is_hit as IsHit, 
+                payload_size as PayloadSize
+            FROM request_logs 
+            WHERE timestamp >= @Since
+            ORDER BY timestamp DESC
+            LIMIT 5000";
+
+        return await connection.QueryAsync<RequestLog>(sql, new { Since = since });
+    }
+    
 }
