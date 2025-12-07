@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.SignalR;
+using RedisProxy.Backend.Hubs;
+
 namespace RedisProxy.Backend.Workers;
 using System.Net.Sockets;
 using System.Text;
@@ -5,7 +8,9 @@ using RedisProxy.Backend.Data;
 using RedisProxy.Backend.Metric;
 
 
-public class RedisMonitorWorker(ILogger<RedisMonitorWorker> logger, DatabaseService db) : BackgroundService
+public class RedisMonitorWorker(ILogger<RedisMonitorWorker> logger, 
+    DatabaseService db,
+    IHubContext<MetricsHub, IMetricsClient> hub) : BackgroundService
 {
     private const string RemoteHost = "127.0.0.1";
     private const int RemotePort = 6379;
@@ -23,6 +28,7 @@ public class RedisMonitorWorker(ILogger<RedisMonitorWorker> logger, DatabaseServ
                 if (stats != null)
                 {
                     await db.SaveServerMetricsAsync(stats);
+                    await hub.Clients.All.ReceiveServerUpdate(stats);
                     logger.LogInformation("Collected and saved Redis Server Metrics (INFO).");
                 }
             }
