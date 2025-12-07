@@ -63,7 +63,8 @@ public class TcpProxyWorker(ILogger<TcpProxyWorker> logger, IRespParser parser, 
                     { 
                         Timestamp = timestamp, 
                         Command = key, 
-                        Count = count 
+                        Count = count,
+                        
                     });
                 }
             }
