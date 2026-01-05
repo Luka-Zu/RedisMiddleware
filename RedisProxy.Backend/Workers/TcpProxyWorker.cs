@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.SignalR;
 using RedisProxy.Backend.Data;
 using RedisProxy.Backend.Hubs;
 using RedisProxy.Backend.Metric;
+using RedisProxy.Backend.MetricModels;
 using RedisProxy.Backend.RespParser;
 
 namespace RedisProxy.Backend.Workers;
@@ -54,8 +55,8 @@ public class TcpProxyWorker(ILogger<TcpProxyWorker> logger,
             using (var redis = new TcpClient())
             {
                 await redis.ConnectAsync(RemoteHost, RemotePort, ct);
-                using var clientStream = client.GetStream();
-                using var redisStream = redis.GetStream();
+                await using var clientStream = client.GetStream();
+                await using var redisStream = redis.GetStream();
 
                 var requestQueue = new ConcurrentQueue<RequestContext>();
 
@@ -77,15 +78,13 @@ public class TcpProxyWorker(ILogger<TcpProxyWorker> logger,
         {
             var (cmd, key) = parser.ParseRequest(buffer, bytesRead);
             
-            // Only log commands we successfully parsed
             if (!string.IsNullOrEmpty(cmd))
             {
                 queue.Enqueue(new RequestContext
                 {
                     Command = cmd,
                     Key = key ?? "",
-                    PayloadSize = bytesRead,
-                    // Timestamp is set automatically in Constructor
+                    PayloadSize = bytesRead
                 });
             }
 
@@ -112,11 +111,9 @@ public class TcpProxyWorker(ILogger<TcpProxyWorker> logger,
 
     private void AnalyzeAndLog(RequestContext request, byte[] buffer, int length)
     {
-        // 1. Calculate Latency
         long endTimestamp = Stopwatch.GetTimestamp();
         double latencyMs = (endTimestamp - request.StartTimestamp) * 1000.0 / Stopwatch.Frequency;
 
-        // 2. Analyze Response Status
         bool isSuccess = true;
         bool isHit = true; // Default to true
 
@@ -141,7 +138,6 @@ public class TcpProxyWorker(ILogger<TcpProxyWorker> logger,
             }
         }
 
-        // 3. Add to Buffer
         _logBuffer.Enqueue(new RequestLog
         {
             Timestamp = DateTime.UtcNow,
@@ -160,11 +156,9 @@ public class TcpProxyWorker(ILogger<TcpProxyWorker> logger,
 
         var logsToSave = new List<RequestLog>();
         
-        // Dequeue everything currently in the buffer
         while (_logBuffer.TryDequeue(out var log))
         {
             logsToSave.Add(log);
-            // Safety limit: Don't try to save 1 million rows at once
             if (logsToSave.Count >= 5000) break; 
         }
 

@@ -48,11 +48,9 @@ public class RedisMonitorWorker(ILogger<RedisMonitorWorker> logger,
         await client.ConnectAsync(RemoteHost, RemotePort);
         using var stream = client.GetStream();
 
-        // 1. Send INFO command
         var cmdBytes = Encoding.UTF8.GetBytes("INFO\r\n");
         await stream.WriteAsync(cmdBytes);
 
-        // 2. Read Response (Simplified reading for brevity - in production use a loop)
         var buffer = new byte[65536]; 
         var bytesRead = await stream.ReadAsync(buffer);
         var response = Encoding.UTF8.GetString(buffer, 0, bytesRead);
@@ -72,7 +70,6 @@ public class RedisMonitorWorker(ILogger<RedisMonitorWorker> logger,
             dict[parts[0]] = parts[1];
         }
 
-        // Helper to safely parse
         long GetLong(string key) => dict.TryGetValue(key, out var v) && long.TryParse(v, out var l) ? l : 0;
         double GetDouble(string key) => dict.TryGetValue(key, out var v) && double.TryParse(v, out var d) ? d : 0;
         string GetString(string key) => dict.TryGetValue(key, out var v) ? v : "unknown";
@@ -81,33 +78,27 @@ public class RedisMonitorWorker(ILogger<RedisMonitorWorker> logger,
         {
             Timestamp = DateTime.UtcNow,
             
-            // Traffic
             InputKbps = GetDouble("instantaneous_input_kbps"),
             OutputKbps = GetDouble("instantaneous_output_kbps"),
             ConnectedClients = (int)GetLong("connected_clients"),
             BlockedClients = (int)GetLong("blocked_clients"),
 
-            // Activity
             OpsPerSec = GetLong("instantaneous_ops_per_sec"),
             TotalCommandsProcessed = GetLong("total_commands_processed"),
             KeyspaceHits = GetLong("keyspace_hits"),
             KeyspaceMisses = GetLong("keyspace_misses"),
 
-            // Memory
             UsedMemory = GetLong("used_memory"),
             UsedMemoryRss = GetLong("used_memory_rss"),
             FragmentationRatio = GetDouble("mem_fragmentation_ratio"),
             MaxMemory = GetLong("maxmemory"),
 
-            // Key Health
             EvictedKeys = GetLong("evicted_keys"),
             ExpiredKeys = GetLong("expired_keys"),
 
-            // Replication
             MasterLinkStatus = GetString("master_link_status"),
             MasterReplOffset = GetLong("master_repl_offset"),
                 
-            // CPU    
             UsedCpuSys = GetDouble("used_cpu_sys"),
             UsedCpuUser = GetDouble("used_cpu_user"),
             UsedCpuSysChildren = GetDouble("used_cpu_sys_children"),

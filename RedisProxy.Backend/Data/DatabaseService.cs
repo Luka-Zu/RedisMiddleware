@@ -19,7 +19,6 @@ public class DatabaseService
         using var connection = new NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
 
-        // 1. Table for Command Counts (Proxy Data)
         var requestLog = @"
                 CREATE TABLE IF NOT EXISTS request_logs (
                     id SERIAL PRIMARY KEY,
@@ -36,7 +35,6 @@ public class DatabaseService
                 CREATE INDEX IF NOT EXISTS idx_logs_time ON request_logs(timestamp);
             ";
 
-        // 2. Table for Server Health (INFO Data)
         var infoLogs = @"
                 CREATE TABLE IF NOT EXISTS server_metrics (
                     id SERIAL PRIMARY KEY,
@@ -100,7 +98,6 @@ public class DatabaseService
         INSERT INTO request_logs (timestamp, command, key_name, latency_ms, is_success, is_hit, payload_size) 
         VALUES (@Timestamp, @Command, @Key, @LatencyMs, @IsSuccess, @IsHit, @PayloadSize)";
 
-        // Dapper executes this as a batch automatically
         await connection.ExecuteAsync(sql, logs);
     }
     
@@ -123,7 +120,6 @@ public class DatabaseService
         return await connection.QueryAsync<ServerMetricLog>(sql, new { Since = since });
     }
 
-    // 2. Fetch Request Logs (Table Data) since a specific time
     public async Task<IEnumerable<RequestLog>> GetRequestLogsSinceAsync(DateTime since)
     {
         using var connection = new NpgsqlConnection(_connectionString);
