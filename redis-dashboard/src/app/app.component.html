@@ -48,12 +48,24 @@
       <div class="chart-card">
         <h3>📊 Command Distribution</h3>
         <div class="chart-wrapper">
-          <canvas baseChart 
-            #pieChart="base-chart"
-            [data]="commandChartData" 
-            [options]="pieOptions" 
-            [type]="'doughnut'">
-          </canvas>
+    
+          <ng-container *ngIf="commandChartData.datasets[0].data.length > 0; else noData">
+            <canvas baseChart 
+              #pieChart="base-chart"
+              [data]="commandChartData" 
+              [options]="pieOptions" 
+              [type]="'doughnut'">
+            </canvas>
+          </ng-container>
+
+          <ng-template #noData>
+            <div class="no-data-placeholder">
+              <div class="icon">💤</div>
+              <p>No traffic detected yet</p>
+              <span class="sub-text">Waiting for Redis commands...</span>
+            </div>
+          </ng-template>
+
         </div>
       </div>
 

@@ -246,3 +246,36 @@ canvas {
   
   td { border-bottom-color: #ffcdd2; }
 }
+
+.no-data-placeholder {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #bdc3c7; /* Light grey text */
+  text-align: center;
+  border: 2px dashed #f0f2f5; /* Subtle dashed border */
+  border-radius: 8px;
+  margin: 10px;
+  background-color: #fafafa;
+
+  .icon {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    opacity: 0.7;
+  }
+
+  p {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #95a5a6;
+  }
+
+  .sub-text {
+    font-size: 0.8rem;
+    margin-top: 5px;
+    color: #bdc3c7;
+  }
+}
