@@ -25,4 +25,12 @@ export class ApiService {
     }
     return this.http.get<any[]>(`${this.baseUrl}/requests/history`, { params });
   }
+
+  getCommandStats(fromTime?: string): Observable<any[]> {
+    let params = new HttpParams();
+    if (fromTime) {
+      params = params.set('from', fromTime);
+    }
+    return this.http.get<any[]>(`${this.baseUrl}/commands/stats`, { params });
+  }
 }

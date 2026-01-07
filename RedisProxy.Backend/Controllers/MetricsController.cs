@@ -5,7 +5,7 @@ namespace RedisProxy.Backend.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class MetricsController(DatabaseService db) : ControllerBase
+public class MetricsController(DatabaseService dbService) : ControllerBase
 {
     [HttpGet("server/history")]
     public async Task<IActionResult> GetServerHistory([FromQuery] DateTime? from)
@@ -15,7 +15,7 @@ public class MetricsController(DatabaseService db) : ControllerBase
         if (timeWindow.Kind == DateTimeKind.Unspecified)
             timeWindow = DateTime.SpecifyKind(timeWindow, DateTimeKind.Utc);
 
-        var data = await db.GetServerMetricsSinceAsync(timeWindow);
+        var data = await dbService.GetServerMetricsSinceAsync(timeWindow);
         
         foreach (var item in data)
         {
@@ -35,7 +35,7 @@ public class MetricsController(DatabaseService db) : ControllerBase
         if (timeWindow.Kind == DateTimeKind.Unspecified)
             timeWindow = DateTime.SpecifyKind(timeWindow, DateTimeKind.Utc);
 
-        var data = await db.GetRequestLogsSinceAsync(timeWindow);
+        var data = await dbService.GetRequestLogsSinceAsync(timeWindow);
         
         foreach (var item in data)
         {
@@ -45,5 +45,16 @@ public class MetricsController(DatabaseService db) : ControllerBase
             }
         }
         return Ok(data);
+    }
+    
+    
+    [HttpGet("commands/stats")]
+    public async Task<IActionResult> GetCommandStats([FromQuery] DateTime from)
+    {
+        // Safety check: if 'from' is default, use 1 hour ago
+        if (from == default) from = DateTime.UtcNow.AddHours(-1);
+
+        var stats = await dbService.GetCommandStatsAsync(from);
+        return Ok(stats);
     }
 }

@@ -30,53 +30,74 @@
     </div>
     <div class="card">
       <h3>Frag Ratio</h3>
-      <div class="value" [class.status-warn]="fragmentationRatio > 1.5">{{ fragmentationRatio | number:'1.2-2' }}</div>
+      <div class="value" [class.status-warn]="fragmentationRatio > 1.5">
+        {{ fragmentationRatio | number:'1.2-2' }}
+      </div>
     </div>
     <div class="card">
       <h3>Evicted Keys</h3>
       <div class="value">{{ evictedKeys }}</div>
     </div>
   </div>
-
+  
   <div class="chart-container">
-    <h2>Server Health (Live)</h2>
+    <h2>Server Health & Analysis</h2>
     
     <div class="charts-grid">
       
       <div class="chart-card">
+        <h3>📊 Command Distribution</h3>
+        <div class="chart-wrapper">
+          <canvas baseChart 
+            [data]="commandChartData" 
+            [options]="pieOptions" 
+            [type]="'doughnut'">
+          </canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
         <h3>🔥 CPU Usage (%)</h3>
-        <canvas baseChart 
-          [data]="cpuChartData"
-          [options]="commonOptions"
-          [type]="'line'">
-        </canvas>
+        <div class="chart-wrapper">
+          <canvas baseChart 
+            [data]="cpuChartData"
+            [options]="commonOptions"
+            [type]="'line'">
+          </canvas>
+        </div>
       </div>
 
       <div class="chart-card">
         <h3>🧠 Memory (RSS vs Used)</h3>
-        <canvas baseChart 
-          [data]="memoryChartData"
-          [options]="commonOptions"
-          [type]="'line'">
-        </canvas>
+        <div class="chart-wrapper">
+          <canvas baseChart 
+            [data]="memoryChartData"
+            [options]="commonOptions"
+            [type]="'line'">
+          </canvas>
+        </div>
       </div>
 
       <div class="chart-card">
         <h3>🌐 Network I/O (KB/s)</h3>
-        <canvas baseChart 
-          [data]="netChartData"
-          [options]="commonOptions"
-          [type]="'line'">
-        </canvas>
+        <div class="chart-wrapper">
+          <canvas baseChart 
+            [data]="netChartData"
+            [options]="commonOptions"
+            [type]="'line'">
+          </canvas>
+        </div>
       </div>
 
       <div class="chart-card">
         <h3>🎯 Cache Hits vs Misses</h3>
-        <canvas baseChart 
-          [data]="hitChartData"
-          [options]="commonOptions"
-          [type]="'line'">
-        </canvas>
+        <div class="chart-wrapper">
+          <canvas baseChart 
+            [data]="hitChartData"
+            [options]="commonOptions"
+            [type]="'line'">
+          </canvas>
+        </div>
       </div>
 
     </div>
@@ -89,8 +110,7 @@
         <tr>
           <th>Time</th>
           <th>Command</th>
-          <th>Key</th>
-          <th>Payload (Bytes)</th>
+          <th style="width: 40%">Key</th> <th>Payload (Bytes)</th>
           <th>Latency (ms)</th>
           <th>Status</th>
         </tr>

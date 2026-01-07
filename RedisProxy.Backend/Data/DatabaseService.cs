@@ -1,6 +1,7 @@
 using RedisProxy.Backend.Metric;
 using Npgsql;
 using Dapper;
+using RedisProxy.Backend.MetricModels;
 
 namespace RedisProxy.Backend.Data;
 
@@ -94,6 +95,22 @@ public class DatabaseService(IConfiguration config)
         VALUES (@Timestamp, @Command, @Key, @LatencyMs, @IsSuccess, @IsHit, @PayloadSize)";
 
         await connection.ExecuteAsync(sql, logs);
+    }
+    
+    public async Task<IEnumerable<CommandStat>> GetCommandStatsAsync(DateTime since)
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+        var sql = @"
+        SELECT 
+            command as Command, 
+            COUNT(*) as Count 
+        FROM request_logs 
+        WHERE timestamp >= @Since 
+        GROUP BY command 
+        ORDER BY count DESC 
+        LIMIT 5"; // Gets Top 5 commands
+
+        return await connection.QueryAsync<CommandStat>(sql, new { Since = since });
     }
     
     public async Task<IEnumerable<ServerMetricLog>> GetServerMetricsSinceAsync(DateTime since)
