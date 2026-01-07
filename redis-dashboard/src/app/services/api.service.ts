@@ -1,0 +1,28 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ApiService {
+  private baseUrl = 'http://localhost:5000/api/metrics';
+
+  constructor(private http: HttpClient) { }
+
+  getServerHistory(fromTime?: string): Observable<any[]> {
+    let params = new HttpParams();
+    if (fromTime) {
+      params = params.set('from', fromTime);
+    }
+    return this.http.get<any[]>(`${this.baseUrl}/server/history`, { params });
+  }
+
+  getRequestHistory(fromTime?: string): Observable<any[]> {
+    let params = new HttpParams();
+    if (fromTime) {
+      params = params.set('from', fromTime);
+    }
+    return this.http.get<any[]>(`${this.baseUrl}/requests/history`, { params });
+  }
+}
