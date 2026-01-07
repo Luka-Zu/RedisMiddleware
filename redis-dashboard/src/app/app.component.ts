@@ -297,27 +297,40 @@ export class AppComponent implements OnInit {
     this.charts?.forEach(child => child.update());
   }
 
+
+  public chartMouseLeave() {
+    this.charts?.forEach(c => {
+      const chartInstance = c.chart;
+      if (chartInstance) {
+        chartInstance.tooltip?.setActiveElements([], { x: 0, y: 0 });
+        chartInstance.update();
+      }
+    });
+  }
+
+  // Keep your syncCharts method as is for the "moving" part, 
+  // but this new method handles the "exit" part reliably.
   private syncCharts(event: any, activeElements: any[], sourceChart: any) {
     if (!activeElements || activeElements.length === 0) {
-      this.charts?.forEach(c => {
-        if (c.chart && c.chart !== sourceChart) {
-          c.chart.tooltip?.setActiveElements([], { x: 0, y: 0 });
-          c.chart.update();
-        }
-      });
       return;
     }
+
     const activeIndex = activeElements[0].index;
+
     this.charts?.forEach(c => {
       const targetChart = c.chart;
+      // Skip the chart triggering the event & skip Pie charts
       if (!targetChart || targetChart === sourceChart || (targetChart.config as any).type === 'doughnut') return;
+
       if (targetChart.data.datasets.length > 0) {
         const newActiveElements = targetChart.data.datasets.map((ds, dsIndex) => ({
-          datasetIndex: dsIndex, index: activeIndex,
+          datasetIndex: dsIndex,
+          index: activeIndex,
         }));
         targetChart.tooltip?.setActiveElements(newActiveElements, { x: 0, y: 0 });
         targetChart.update();
       }
     });
   }
+
 }

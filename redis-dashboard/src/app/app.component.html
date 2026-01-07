@@ -65,7 +65,7 @@
             <div class="count-visual">
               <span class="count">{{ item.count }}</span>
               <div class="progress-bar" 
-                  [style.width.%]="(item.count / (hotKeys[0]?.count || 1)) * 100">
+                  [style.width.%]="(item.count / (hotKeys[0].count || 1)) * 100">
               </div>
             </div>
           </div>
@@ -106,6 +106,7 @@
         <div class="chart-wrapper">
           <canvas baseChart 
             [data]="cpuChartData"
+            (mouseout)="chartMouseLeave()"
             [options]="commonOptions"
             [type]="'line'">
           </canvas>
@@ -117,6 +118,7 @@
         <div class="chart-wrapper">
           <canvas baseChart 
             [data]="memoryChartData"
+            (mouseout)="chartMouseLeave()"
             [options]="commonOptions"
             [type]="'line'">
           </canvas>
@@ -129,6 +131,7 @@
           <canvas baseChart 
             [data]="netChartData"
             [options]="commonOptions"
+            (mouseout)="chartMouseLeave()"
             [type]="'line'">
           </canvas>
         </div>
@@ -139,6 +142,7 @@
         <div class="chart-wrapper">
           <canvas baseChart 
             [data]="hitChartData"
+            (mouseout)="chartMouseLeave()"
             [options]="commonOptions"
             [type]="'line'">
           </canvas>
