@@ -21,7 +21,7 @@ public class TcpProxyWorker(ILogger<TcpProxyWorker> logger,
     private const string RemoteHost = "127.0.0.1";
 
     // BUFFER: Holds individual logs before saving
-    private ConcurrentQueue<RequestLog> _logBuffer = new();
+    private readonly ConcurrentQueue<RequestLog> _logBuffer = new();
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

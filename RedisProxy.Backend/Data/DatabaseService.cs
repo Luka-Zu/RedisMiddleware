@@ -4,15 +4,10 @@ using Dapper;
 
 namespace RedisProxy.Backend.Data;
 
-public class DatabaseService
+public class DatabaseService(IConfiguration config)
 {
-    private readonly string _connectionString;
-
-    public DatabaseService(IConfiguration config)
-    {
-        _connectionString = config.GetConnectionString("DefaultConnection")
-                            ?? throw new Exception("Database connection string is missing");
-    }
+    private readonly string _connectionString = config.GetConnectionString("DefaultConnection")
+                                                ?? throw new Exception("Database connection string is missing");
 
     public async Task InitializeDatabaseAsync()
     {

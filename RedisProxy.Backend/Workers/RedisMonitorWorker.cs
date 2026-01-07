@@ -4,8 +4,8 @@ using RedisProxy.Backend.Hubs;
 namespace RedisProxy.Backend.Workers;
 using System.Net.Sockets;
 using System.Text;
-using RedisProxy.Backend.Data;
-using RedisProxy.Backend.Metric;
+using Data;
+using Metric;
 
 
 public class RedisMonitorWorker(ILogger<RedisMonitorWorker> logger, 
