@@ -404,7 +404,6 @@ canvas {
   font-weight: bold;
 }
 
-
 /* --- MODAL STYLES --- */
 .modal-overlay {
   position: fixed;
@@ -412,48 +411,62 @@ canvas {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.6); /* Dim background */
-  z-index: 1000; /* On top of everything */
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 2000; /* High z-index */
   display: flex;
   justify-content: center;
   align-items: center;
-  backdrop-filter: blur(3px); /* Cool blur effect */
+  backdrop-filter: blur(5px); /* Stronger blur for focus */
+  animation: fadeIn 0.2s ease-out;
 }
 
 .modal-content {
-  background: white;
-  width: 90vw;  /* Large width */
-  height: 85vh; /* Large height */
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  background: #ffffff;
+  width: 90vw;
+  height: 85vh;
+  max-width: 1600px; /* Prevent getting too wide on ultrawide screens */
+  border-radius: 16px; /* Softer corners */
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   display: flex;
   flex-direction: column;
-  padding: 20px;
-  animation: popIn 0.3s ease-out;
+  overflow: hidden; /* Ensures header doesn't spill out */
+  animation: slideUp 0.3s ease-out;
 
   .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    padding: 15px 25px;
+    background-color: #f8f9fa; /* Light grey header separation */
+    border-bottom: 1px solid #eef2f6;
     
     h2 {
       margin: 0;
-      color: #2c3e50;
-      font-size: 1.5rem;
+      color: #1e293b;
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.5px;
     }
 
     .close-btn {
-      background: none;
-      border: none;
-      font-size: 2rem;
-      color: #7f8c8d;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 50%; /* Circular button */
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: #64748b;
       cursor: pointer;
-      line-height: 1;
-      padding: 0 10px;
+      transition: all 0.2s;
       
       &:hover {
-        color: #c0392b;
+        background-color: #fee2e2;
+        color: #ef4444;
+        border-color: #fecaca;
+        transform: rotate(90deg); /* Playful interaction */
       }
     }
   }
@@ -462,11 +475,18 @@ canvas {
     flex-grow: 1;
     position: relative;
     width: 100%;
-    /* Ensure canvas fills the space */
+    padding: 20px; /* Breathing room for the chart */
+    background-color: #fff;
   }
 }
 
-@keyframes popIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }

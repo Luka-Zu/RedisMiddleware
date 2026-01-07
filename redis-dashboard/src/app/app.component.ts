@@ -272,7 +272,7 @@ export class AppComponent implements OnInit, OnDestroy {
     // 2. Request Logs
     const logSub = this.signalRService.requestLogs$.subscribe((newLogs: RequestLog[]) => {
       // Update Table
-      this.requestLogs = [...newLogs, ...this.requestLogs].slice(0, 50);
+      this.requestLogs = [...newLogs, ...this.requestLogs].slice(0, 10000);
 
       let chartChanged = false;
       const labels = this.commandChartData.labels as string[];
