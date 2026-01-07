@@ -8,12 +8,7 @@
 
       <div class="filter-control">
         <label for="startDate">Start from:</label>
-        <input 
-          type="datetime-local" 
-          id="startDate"
-          [(ngModel)]="filterDate" 
-          (change)="onFilterChange()" 
-        />
+        <input type="datetime-local" id="startDate" [(ngModel)]="filterDate" (change)="onFilterChange()" />
         <button (click)="onFilterChange()">Refresh</button>
       </div>
     </div>
@@ -39,48 +34,52 @@
       <div class="value">{{ evictedKeys }}</div>
     </div>
   </div>
-  
+
   <div class="chart-container">
     <h2>Server Health & Analysis</h2>
-    
+
     <div class="charts-grid">
+
       
       <div class="chart-card">
-      <h3>🔥 Hot Key Leaderboard</h3>
-      
-      <div class="hot-keys-container">
-        <div class="list-header">
-          <span>Key Name</span>
-          <span>Hits</span>
-        </div>
-
-        <div class="list-body">
-          <div *ngFor="let item of hotKeys; let i = index" class="list-item">
-            
-            <div class="key-info">
-              <span class="rank">#{{ i + 1 }}</span>
-              <span class="key-name" title="{{ item.key }}">{{ item.key }}</span>
-            </div>
-            
-            <div class="count-visual">
-              <span class="count">{{ item.count }}</span>
-              <div class="progress-bar" 
-                  [style.width.%]="(item.count / (hotKeys[0].count || 1)) * 100">
-              </div>
-            </div>
+        <h3>🔥 Hot Key Leaderboard</h3>
+        
+        <div class="hot-keys-container">
+          <div class="list-header">
+            <span>Key Name</span>
+            <span>Hits</span>
           </div>
 
-          <div *ngIf="hotKeys.length === 0" class="no-data-placeholder">
-            <p>No keys accessed yet</p>
+          <div class="list-body">
+            <div *ngFor="let item of hotKeys; let i = index" class="list-item">
+              
+              <div class="key-info">
+                <span class="rank">#{{ i + 1 }}</span>
+                <span class="key-name" title="{{ item.key }}">{{ item.key }}</span>
+              </div>
+              
+              <div class="count-visual">
+                <span class="count">{{ item.count }}</span>
+                <div class="progress-bar" 
+                    [style.width.%]="(item.count / (hotKeys[0].count || 1)) * 100">
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="hotKeys.length === 0" class="no-data-placeholder">
+              <p>No keys accessed yet</p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
       <div class="chart-card">
-        <h3>📊 Command Distribution</h3>
+        <div class="card-header-row">
+           <h3>📊 Command Distribution</h3>
+           <span class="expand-icon">⤢</span>
+        </div>
         <div class="chart-wrapper">
-    
+          
           <ng-container *ngIf="commandChartData.datasets[0].data.length > 0; else noData">
             <canvas baseChart 
               #pieChart="base-chart"
@@ -101,61 +100,66 @@
         </div>
       </div>
 
-      <div class="chart-card">
-        <h3>🔥 CPU Usage (%)</h3>
-        <div class="chart-wrapper">
-          <canvas baseChart 
-            [data]="cpuChartData"
-            (mouseout)="chartMouseLeave()"
-            [options]="commonOptions"
+      <div class="chart-card clickable-chart"
+        (click)="openChartModal('CPU Usage (%)', cpuChartData, commonOptions, 'line')">
+        <div class="card-header-row">
+          <h3>🔥 CPU Usage (%)</h3>
+          <span class="expand-icon">⤢</span>
+        </div>
+        <div class="chart-wrapper" (mouseleave)="chartMouseLeave()">
+          <canvas baseChart [data]="cpuChartData" [options]="commonOptions"
             [type]="'line'">
           </canvas>
         </div>
       </div>
 
-      <div class="chart-card">
-        <h3>⏱️ Latency Distribution (ms)</h3>
-        <div class="chart-wrapper">
-          <canvas baseChart 
-            (mouseout)="chartMouseLeave()"
-            [data]="latencyChartData"
-            [options]="commonOptions"
+      <div class="chart-card clickable-chart"
+        (click)="openChartModal('Latency Distribution (ms)', latencyChartData, commonOptions, 'line')">
+        <div class="card-header-row">
+          <h3>⏱️ Latency Distribution</h3>
+          <span class="expand-icon">⤢</span>
+        </div>
+        <div class="chart-wrapper" (mouseleave)="chartMouseLeave()">
+          <canvas baseChart [data]="latencyChartData" [options]="commonOptions"
             [type]="'line'">
           </canvas>
         </div>
       </div>
 
-      <div class="chart-card">
-        <h3>🧠 Memory (RSS vs Used)</h3>
-        <div class="chart-wrapper">
-          <canvas baseChart 
-            [data]="memoryChartData"
-            (mouseout)="chartMouseLeave()"
-            [options]="commonOptions"
+      <div class="chart-card clickable-chart"
+        (click)="openChartModal('Memory Usage', memoryChartData, commonOptions, 'line')">
+        <div class="card-header-row">
+          <h3>🧠 Memory (RSS vs Used)</h3>
+          <span class="expand-icon">⤢</span>
+        </div>
+        <div class="chart-wrapper" (mouseleave)="chartMouseLeave()">
+          <canvas baseChart [data]="memoryChartData" [options]="commonOptions"
             [type]="'line'">
           </canvas>
         </div>
       </div>
 
-      <div class="chart-card">
-        <h3>🌐 Network I/O (KB/s)</h3>
-        <div class="chart-wrapper">
-          <canvas baseChart 
-            [data]="netChartData"
-            [options]="commonOptions"
-            (mouseout)="chartMouseLeave()"
+      <div class="chart-card clickable-chart"
+        (click)="openChartModal('Network I/O', netChartData, commonOptions, 'line')">
+        <div class="card-header-row">
+          <h3>🌐 Network I/O (KB/s)</h3>
+          <span class="expand-icon">⤢</span>
+        </div>
+        <div class="chart-wrapper" (mouseleave)="chartMouseLeave()">
+          <canvas baseChart [data]="netChartData" [options]="commonOptions"
             [type]="'line'">
           </canvas>
         </div>
       </div>
 
-      <div class="chart-card">
-        <h3>🎯 Cache Hits vs Misses</h3>
-        <div class="chart-wrapper">
-          <canvas baseChart 
-            [data]="hitChartData"
-            (mouseout)="chartMouseLeave()"
-            [options]="commonOptions"
+      <div class="chart-card clickable-chart"
+        (click)="openChartModal('Cache Hits vs Misses', hitChartData, commonOptions, 'line')">
+        <div class="card-header-row">
+          <h3>🎯 Cache Hits vs Misses</h3>
+          <span class="expand-icon">⤢</span>
+        </div>
+        <div class="chart-wrapper" (mouseleave)="chartMouseLeave()">
+          <canvas baseChart [data]="hitChartData" [options]="commonOptions"
             [type]="'line'">
           </canvas>
         </div>
@@ -171,7 +175,8 @@
         <tr>
           <th>Time</th>
           <th>Command</th>
-          <th style="width: 40%">Key</th> <th>Payload (Bytes)</th>
+          <th style="width: 40%">Key</th>
+          <th>Payload (Bytes)</th>
           <th>Latency (ms)</th>
           <th>Status</th>
         </tr>
@@ -191,5 +196,28 @@
         </tr>
       </tbody>
     </table>
+  </div>
+</div>
+
+
+
+
+
+<div class="modal-overlay" *ngIf="isModalOpen" (click)="closeModal()">
+  <div class="modal-content" (click)="stopPropagation($event)">
+    
+    <div class="modal-header">
+      <h2>{{ modalTitle }}</h2>
+      <button class="close-btn" (click)="closeModal()">×</button>
+    </div>
+
+    <div class="modal-body" (mouseleave)="chartMouseLeave()">
+      <canvas baseChart 
+        [data]="modalChartData"
+        [options]="modalChartOptions"
+        [plugins]="modalPlugins"
+        [type]="modalChartType">
+      </canvas>
+    </div>
   </div>
 </div>

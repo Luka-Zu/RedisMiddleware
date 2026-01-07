@@ -364,3 +364,109 @@ canvas {
     transition: width 0.3s ease;
   }
 }
+
+/* --- CLICKABLE CHARTS --- */
+.chart-card.clickable-chart {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    
+    .expand-icon {
+      opacity: 1;
+    }
+  }
+}
+
+.card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+
+  h3 {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+}
+
+.expand-icon {
+  font-size: 1.2rem;
+  color: #3498db;
+  opacity: 0; /* Hidden by default */
+  transition: opacity 0.2s;
+  font-weight: bold;
+}
+
+
+/* --- MODAL STYLES --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6); /* Dim background */
+  z-index: 1000; /* On top of everything */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(3px); /* Cool blur effect */
+}
+
+.modal-content {
+  background: white;
+  width: 90vw;  /* Large width */
+  height: 85vh; /* Large height */
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  animation: popIn 0.3s ease-out;
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    
+    h2 {
+      margin: 0;
+      color: #2c3e50;
+      font-size: 1.5rem;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 2rem;
+      color: #7f8c8d;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0 10px;
+      
+      &:hover {
+        color: #c0392b;
+      }
+    }
+  }
+
+  .modal-body {
+    flex-grow: 1;
+    position: relative;
+    width: 100%;
+    /* Ensure canvas fills the space */
+  }
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}

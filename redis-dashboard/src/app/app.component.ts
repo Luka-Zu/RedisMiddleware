@@ -1,4 +1,5 @@
-import { Component, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { Component, OnInit, OnDestroy, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { ChartConfiguration, ChartOptions, Chart } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { ApiService } from './services/api.service';
@@ -8,12 +9,13 @@ import { RequestLog } from './interfaces/RequestLog';
 import { ServerMetric } from './interfaces/ServerMetric';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 
+
 // --- 1. DEFINE CUSTOM PLUGINS ---
 
 const verticalLinePlugin = {
   id: 'verticalLine',
   afterDraw: (chart: any) => {
-    if (chart.tooltip?._active?.length) {
+    if (chart.tooltip?._active?.length && chart.scales.y) {
       const activePoint = chart.tooltip._active[0];
       const ctx = chart.ctx;
       const x = activePoint.element.x;
@@ -47,7 +49,43 @@ Chart.defaults.set('plugins.datalabels', {
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
+  private subscriptions: Subscription[] = [];
+  public isModalOpen = false;
+  public modalTitle = '';
+  public modalChartData: any = null;
+  public modalChartOptions: any = null;
+  public modalChartType: 'line' | 'doughnut' = 'line';
+  public modalPlugins: any[] = [];
+
+  private lastActiveIndex: number | null = null;
+  private syncFrameId: number | null = null;
+
+  // Method to open the modal
+  public openChartModal(title: string, data: any, options: any, type: 'line' | 'doughnut' = 'line', plugins: any[] = []) {
+    this.modalTitle = title;
+    this.modalChartData = data;
+    // We clone options to ensure the modal can have different layout settings if needed (like aspect ratio)
+    this.modalChartOptions = {
+      ...options,
+      maintainAspectRatio: false, // Allow modal to fill screen
+      animation: false
+    };
+    this.modalChartType = type;
+    this.modalPlugins = plugins;
+    this.isModalOpen = true;
+  }
+
+  public closeModal() {
+    this.isModalOpen = false;
+    this.modalChartData = null; // Clear reference
+  }
+
+  public stopPropagation(event: Event) {
+    event.stopPropagation();
+  }
+
+  public pieChartPlugins = [ChartDataLabels];
 
   public hotKeys: { key: string; count: number }[] = [];
 
@@ -78,6 +116,7 @@ export class AppComponent implements OnInit {
 
   public commonOptions: ChartOptions<'line'> = {
     responsive: true,
+    maintainAspectRatio: false,
     animation: false,
     elements: { point: { radius: 0 } },
     scales: { x: { display: false }, y: { beginAtZero: true } },
@@ -101,28 +140,28 @@ export class AppComponent implements OnInit {
   public latencyChartData: ChartConfiguration<'line'>['data'] = {
     labels: [],
     datasets: [
-      { 
-        data: [], 
-        label: 'P50 (Median)', 
+      {
+        data: [],
+        label: 'P50 (Median)',
         borderColor: '#36a2eb', // Blue
-        backgroundColor: 'rgba(54, 162, 235, 0.1)', 
+        backgroundColor: 'rgba(54, 162, 235, 0.1)',
         fill: false,
         tension: 0.4
       },
-      { 
-        data: [], 
-        label: 'P95 (Tail)', 
+      {
+        data: [],
+        label: 'P95 (Tail)',
         borderColor: '#f39c12', // Orange
-        borderDash: [5, 5], 
+        borderDash: [5, 5],
         fill: false,
-        tension: 0.4 
+        tension: 0.4
       },
-      { 
-        data: [], 
-        label: 'P99 (Max Outliers)', 
+      {
+        data: [],
+        label: 'P99 (Max Outliers)',
         borderColor: '#c0392b', // Red
         fill: false,
-        tension: 0.4 
+        tension: 0.4
       }
     ]
   };
@@ -162,6 +201,11 @@ export class AppComponent implements OnInit {
     this.signalRService.startConnection();
     this.loadHistory();
     this.subscribeToRealtimeEvents();
+  }
+
+  ngOnDestroy() {
+    // Unsubscribe to prevent memory leaks and "ghost" updates
+    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
   // --- DATA LOADING ---
@@ -214,7 +258,7 @@ export class AppComponent implements OnInit {
 
   private subscribeToRealtimeEvents() {
     // 1. Server Metrics
-    this.signalRService.serverMetrics$.subscribe((metric: ServerMetric) => {
+    const metricSub = this.signalRService.serverMetrics$.subscribe((metric: ServerMetric) => {
       this.processMetric(metric, true);
       this.updateAllCharts();
       this.currentOpsPerSec = metric.opsPerSec;
@@ -223,8 +267,10 @@ export class AppComponent implements OnInit {
       this.evictedKeys = metric.evictedKeys;
     });
 
+    this.subscriptions.push(metricSub);
+
     // 2. Request Logs
-    this.signalRService.requestLogs$.subscribe((newLogs: RequestLog[]) => {
+    const logSub = this.signalRService.requestLogs$.subscribe((newLogs: RequestLog[]) => {
       // Update Table
       this.requestLogs = [...newLogs, ...this.requestLogs].slice(0, 50);
 
@@ -257,7 +303,7 @@ export class AppComponent implements OnInit {
         if (!log.key) return; // Skip logs without keys (like PING)
 
         const existingItem = this.hotKeys.find(i => i.key === log.key);
-        
+
         if (existingItem) {
           existingItem.count++;
         } else {
@@ -266,7 +312,7 @@ export class AppComponent implements OnInit {
       });
 
       this.hotKeys.sort((a, b) => b.count - a.count);
-      
+
       if (this.hotKeys.length > 10) {
         this.hotKeys = this.hotKeys.slice(0, 10);
       }
@@ -280,7 +326,8 @@ export class AppComponent implements OnInit {
       if (this.latencyWindow.length > 200) {
         this.latencyWindow = this.latencyWindow.slice(this.latencyWindow.length - 200);
       }
-    });
+    }
+    );
   }
 
   // --- HELPER LOGIC ---
@@ -357,7 +404,7 @@ export class AppComponent implements OnInit {
     reset(this.netChartData);
     reset(this.hitChartData);
     reset(this.latencyChartData);
-    
+
     // Clear buffer
     this.latencyWindow = [];
   }
@@ -368,46 +415,66 @@ export class AppComponent implements OnInit {
 
 
   public chartMouseLeave() {
+    this.lastActiveIndex = null;
+
     this.charts?.forEach(c => {
       const chartInstance = c.chart;
-      if (chartInstance) {
-        chartInstance.tooltip?.setActiveElements([], { x: 0, y: 0 });
-        chartInstance.update();
+      
+      // FIX: Strictly ensure we only touch LINE charts
+      if (!chartInstance || (chartInstance.config as any).type !== 'line') return;
+
+      if (chartInstance.tooltip && chartInstance.tooltip.getActiveElements().length > 0) {
+        chartInstance.tooltip.setActiveElements([], { x: 0, y: 0 });
+        chartInstance.update('none');
       }
     });
   }
 
-  // Keep your syncCharts method as is for the "moving" part, 
-  // but this new method handles the "exit" part reliably.
   private syncCharts(event: any, activeElements: any[], sourceChart: any) {
-    if (!activeElements || activeElements.length === 0) {
-      return;
+    if (!activeElements || activeElements.length === 0) return;
+
+    const currentActiveIndex = activeElements[0].index;
+
+    // Optimization: Don't do anything if we are already on this index
+    if (currentActiveIndex === this.lastActiveIndex) return;
+    
+    this.lastActiveIndex = currentActiveIndex;
+
+    // CANCEL previous frame if it hasn't run yet (prevents stacking updates)
+    if (this.syncFrameId) {
+      cancelAnimationFrame(this.syncFrameId);
     }
 
-    const activeIndex = activeElements[0].index;
+    // SCHEDULE new frame
+    this.syncFrameId = requestAnimationFrame(() => {
+      this.charts?.forEach(c => {
+        const targetChart = c.chart;
 
-    this.charts?.forEach(c => {
-      const targetChart = c.chart;
-      // Skip the chart triggering the event & skip Pie charts
-      if (!targetChart || targetChart === sourceChart || (targetChart.config as any).type === 'doughnut') return;
+        // FIX: Strictly check for 'line' type. 
+        // This prevents the code from trying to sync tooltips on the Pie Chart or Hot Keys.
+        if (!targetChart || targetChart === sourceChart || (targetChart.config as any).type !== 'line') {
+          return;
+        }
 
-      if (targetChart.data.datasets.length > 0) {
-        const newActiveElements = targetChart.data.datasets.map((ds, dsIndex) => ({
-          datasetIndex: dsIndex,
-          index: activeIndex,
-        }));
-        targetChart.tooltip?.setActiveElements(newActiveElements, { x: 0, y: 0 });
-        targetChart.update();
-      }
+        if (targetChart.data.datasets.length > 0) {
+          const newActiveElements = targetChart.data.datasets.map((ds, dsIndex) => ({
+            datasetIndex: dsIndex,
+            index: currentActiveIndex,
+          }));
+
+          targetChart.tooltip?.setActiveElements(newActiveElements, { x: 0, y: 0 });
+          targetChart.update('none');
+        }
+      });
     });
   }
 
   private getPercentile(data: number[], percentile: number): number {
     if (data.length === 0) return 0;
-    
+
     // Sort numbers ascending
     const sorted = [...data].sort((a, b) => a - b);
-    
+
     // Calculate index
     const index = Math.ceil((percentile / 100) * sorted.length) - 1;
     return sorted[Math.max(0, index)];
