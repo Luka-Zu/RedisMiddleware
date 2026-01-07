@@ -414,58 +414,61 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
 
+
   public chartMouseLeave() {
     this.lastActiveIndex = null;
 
     this.charts?.forEach(c => {
       const chartInstance = c.chart;
       
-      // FIX: Strictly ensure we only touch LINE charts
       if (!chartInstance || (chartInstance.config as any).type !== 'line') return;
 
-      if (chartInstance.tooltip && chartInstance.tooltip.getActiveElements().length > 0) {
+      if (chartInstance.tooltip) {
         chartInstance.tooltip.setActiveElements([], { x: 0, y: 0 });
-        chartInstance.update('none');
       }
+      
+      chartInstance.update('none');
     });
   }
 
   private syncCharts(event: any, activeElements: any[], sourceChart: any) {
-    if (!activeElements || activeElements.length === 0) return;
+    if (sourceChart && sourceChart.canvas && !sourceChart.canvas.matches(':hover')) {
+      return;
+    }
+
+    if (!activeElements || activeElements.length === 0) {
+      if (this.lastActiveIndex !== null) {
+        this.chartMouseLeave();
+      }
+      return;
+    }
 
     const currentActiveIndex = activeElements[0].index;
 
-    // Optimization: Don't do anything if we are already on this index
-    if (currentActiveIndex === this.lastActiveIndex) return;
+    if (currentActiveIndex === this.lastActiveIndex) {
+      return; 
+    }
     
     this.lastActiveIndex = currentActiveIndex;
 
-    // CANCEL previous frame if it hasn't run yet (prevents stacking updates)
-    if (this.syncFrameId) {
-      cancelAnimationFrame(this.syncFrameId);
-    }
+    this.charts?.forEach(c => {
+      const targetChart = c.chart;
 
-    // SCHEDULE new frame
-    this.syncFrameId = requestAnimationFrame(() => {
-      this.charts?.forEach(c => {
-        const targetChart = c.chart;
+      if (!targetChart || targetChart === sourceChart || (targetChart.config as any).type !== 'line') {
+        return;
+      }
 
-        // FIX: Strictly check for 'line' type. 
-        // This prevents the code from trying to sync tooltips on the Pie Chart or Hot Keys.
-        if (!targetChart || targetChart === sourceChart || (targetChart.config as any).type !== 'line') {
-          return;
+      if (targetChart.data.datasets.length > 0) {
+        const newActiveElements = targetChart.data.datasets.map((ds, dsIndex) => ({
+          datasetIndex: dsIndex,
+          index: currentActiveIndex,
+        }));
+
+        if (targetChart.tooltip) {
+           targetChart.tooltip.setActiveElements(newActiveElements, { x: 0, y: 0 });
         }
-
-        if (targetChart.data.datasets.length > 0) {
-          const newActiveElements = targetChart.data.datasets.map((ds, dsIndex) => ({
-            datasetIndex: dsIndex,
-            index: currentActiveIndex,
-          }));
-
-          targetChart.tooltip?.setActiveElements(newActiveElements, { x: 0, y: 0 });
-          targetChart.update('none');
-        }
-      });
+        targetChart.update('none');
+      }
     });
   }
 
