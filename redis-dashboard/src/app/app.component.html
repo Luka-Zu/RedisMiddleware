@@ -114,6 +114,18 @@
       </div>
 
       <div class="chart-card">
+        <h3>⏱️ Latency Distribution (ms)</h3>
+        <div class="chart-wrapper">
+          <canvas baseChart 
+            (mouseout)="chartMouseLeave()"
+            [data]="latencyChartData"
+            [options]="commonOptions"
+            [type]="'line'">
+          </canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
         <h3>🧠 Memory (RSS vs Used)</h3>
         <div class="chart-wrapper">
           <canvas baseChart 

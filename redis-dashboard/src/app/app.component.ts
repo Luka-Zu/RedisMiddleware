@@ -98,6 +98,38 @@ export class AppComponent implements OnInit {
   public evictedKeys: number = 0;
   public requestLogs: RequestLog[] = [];
 
+  public latencyChartData: ChartConfiguration<'line'>['data'] = {
+    labels: [],
+    datasets: [
+      { 
+        data: [], 
+        label: 'P50 (Median)', 
+        borderColor: '#36a2eb', // Blue
+        backgroundColor: 'rgba(54, 162, 235, 0.1)', 
+        fill: false,
+        tension: 0.4
+      },
+      { 
+        data: [], 
+        label: 'P95 (Tail)', 
+        borderColor: '#f39c12', // Orange
+        borderDash: [5, 5], 
+        fill: false,
+        tension: 0.4 
+      },
+      { 
+        data: [], 
+        label: 'P99 (Max Outliers)', 
+        borderColor: '#c0392b', // Red
+        fill: false,
+        tension: 0.4 
+      }
+    ]
+  };
+
+  private latencyWindow: number[] = [];
+
+
   @ViewChildren(BaseChartDirective) charts?: QueryList<BaseChartDirective>;
   @ViewChild('pieChart') pieChart?: BaseChartDirective;
 
@@ -165,6 +197,13 @@ export class AppComponent implements OnInit {
     this.apiService.getHotKeys(isoString).subscribe(data => {
       this.hotKeys = data;
     });
+
+    this.apiService.getRequestHistory(isoString).subscribe((data: RequestLog[]) => {
+      this.requestLogs = data;
+
+      // Initialize buffer with historical data
+      this.latencyWindow = data.map(d => d.latencyMs).slice(0, 200);
+    });
   }
 
   public onFilterChange() {
@@ -231,6 +270,16 @@ export class AppComponent implements OnInit {
       if (this.hotKeys.length > 10) {
         this.hotKeys = this.hotKeys.slice(0, 10);
       }
+
+      newLogs.forEach(log => {
+        this.latencyWindow.push(log.latencyMs);
+      });
+
+      // Keep buffer size manageable (e.g., last 200 requests)
+      // This represents the "Window" we are analyzing
+      if (this.latencyWindow.length > 200) {
+        this.latencyWindow = this.latencyWindow.slice(this.latencyWindow.length - 200);
+      }
     });
   }
 
@@ -273,6 +322,22 @@ export class AppComponent implements OnInit {
       this.shiftChart(this.netChartData);
       this.shiftChart(this.hitChartData);
     }
+
+    // 1. Calculate P50, P95, P99 from our sliding window
+    const p50 = this.getPercentile(this.latencyWindow, 50);
+    const p95 = this.getPercentile(this.latencyWindow, 95);
+    const p99 = this.getPercentile(this.latencyWindow, 99);
+
+    // 2. Push to Chart
+    this.latencyChartData.labels?.push(timeLabel);
+    this.latencyChartData.datasets[0].data.push(p50);
+    this.latencyChartData.datasets[1].data.push(p95);
+    this.latencyChartData.datasets[2].data.push(p99);
+
+    // 3. Cleanup: Limit chart width
+    if (isRealtime && this.latencyChartData.labels && this.latencyChartData.labels.length > 50) {
+      this.shiftChart(this.latencyChartData);
+    }
   }
 
   private shiftChart(config: ChartConfiguration['data']) {
@@ -291,6 +356,10 @@ export class AppComponent implements OnInit {
     reset(this.memoryChartData);
     reset(this.netChartData);
     reset(this.hitChartData);
+    reset(this.latencyChartData);
+    
+    // Clear buffer
+    this.latencyWindow = [];
   }
 
   private updateAllCharts() {
@@ -331,6 +400,17 @@ export class AppComponent implements OnInit {
         targetChart.update();
       }
     });
+  }
+
+  private getPercentile(data: number[], percentile: number): number {
+    if (data.length === 0) return 0;
+    
+    // Sort numbers ascending
+    const sorted = [...data].sort((a, b) => a - b);
+    
+    // Calculate index
+    const index = Math.ceil((percentile / 100) * sorted.length) - 1;
+    return sorted[Math.max(0, index)];
   }
 
 }
