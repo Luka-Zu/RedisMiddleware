@@ -12,7 +12,7 @@ public class DatabaseService(IConfiguration config)
 
     public async Task InitializeDatabaseAsync()
     {
-        using var connection = new NpgsqlConnection(_connectionString);
+        await using var connection = new NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
 
         var requestLog = @"
@@ -67,7 +67,7 @@ public class DatabaseService(IConfiguration config)
 
     public async Task SaveServerMetricsAsync(ServerMetricLog metric)
     {
-        using var connection = new NpgsqlConnection(_connectionString);
+        await using var connection = new NpgsqlConnection(_connectionString);
         var sql = @"
                 INSERT INTO server_metrics (
                     timestamp, 
@@ -89,7 +89,7 @@ public class DatabaseService(IConfiguration config)
 
     public async Task SaveRequestLogsAsync(IEnumerable<RequestLog> logs)
     {
-        using var connection = new NpgsqlConnection(_connectionString);
+        await using var connection = new NpgsqlConnection(_connectionString);
         var sql = @"
         INSERT INTO request_logs (timestamp, command, key_name, latency_ms, is_success, is_hit, payload_size) 
         VALUES (@Timestamp, @Command, @Key, @LatencyMs, @IsSuccess, @IsHit, @PayloadSize)";
@@ -99,7 +99,7 @@ public class DatabaseService(IConfiguration config)
     
     public async Task<IEnumerable<CommandStat>> GetCommandStatsAsync(DateTime since)
     {
-        using var connection = new NpgsqlConnection(_connectionString);
+        await using var connection = new NpgsqlConnection(_connectionString);
         var sql = @"
         SELECT 
             command as Command, 
@@ -115,7 +115,7 @@ public class DatabaseService(IConfiguration config)
     
     public async Task<IEnumerable<ServerMetricLog>> GetServerMetricsSinceAsync(DateTime since)
     {
-        using var connection = new NpgsqlConnection(_connectionString);
+        await using var connection = new NpgsqlConnection(_connectionString);
         var sql = @"
         SELECT 
             timestamp, 
@@ -150,7 +150,7 @@ public class DatabaseService(IConfiguration config)
 
     public async Task<IEnumerable<RequestLog>> GetRequestLogsSinceAsync(DateTime since)
     {
-        using var connection = new NpgsqlConnection(_connectionString);
+        await using var connection = new NpgsqlConnection(_connectionString);
         var sql = @"
             SELECT 
                 timestamp, 
@@ -166,6 +166,24 @@ public class DatabaseService(IConfiguration config)
             LIMIT 5000";
 
         return await connection.QueryAsync<RequestLog>(sql, new { Since = since });
+    }
+    
+    public async Task<IEnumerable<HotKeyStat>> GetHotKeysAsync(DateTime since)
+    {
+        await using var connection = new NpgsqlConnection(_connectionString);
+        var sql = @"
+        SELECT 
+            key_name as Key, 
+            COUNT(*) as Count 
+        FROM request_logs 
+        WHERE timestamp >= @Since 
+          AND key_name IS NOT NULL 
+          AND key_name != ''
+        GROUP BY key_name 
+        ORDER BY count DESC 
+        LIMIT 10"; // Get Top 10
+
+        return await connection.QueryAsync<HotKeyStat>(sql, new { Since = since });
     }
     
 }

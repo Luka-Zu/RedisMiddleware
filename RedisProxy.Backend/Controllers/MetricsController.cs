@@ -57,4 +57,15 @@ public class MetricsController(DatabaseService dbService) : ControllerBase
         var stats = await dbService.GetCommandStatsAsync(from);
         return Ok(stats);
     }
+    
+    [HttpGet("keys/hot")]
+    public async Task<IActionResult> GetHotKeys([FromQuery] DateTime from)
+    {
+        // Default to 1 hour ago if no time provided
+        if (from == default) from = DateTime.UtcNow.AddHours(-1);
+    
+        var stats = await dbService.GetHotKeysAsync(from);
+        return Ok(stats);
+    }
+    
 }

@@ -26,7 +26,7 @@ const verticalLinePlugin = {
       ctx.lineTo(x, bottom);
       ctx.lineWidth = 1;
       ctx.strokeStyle = 'rgba(0,0,0, 0.5)';
-      ctx.setLineDash([3, 3]); 
+      ctx.setLineDash([3, 3]);
       ctx.stroke();
       ctx.restore();
     }
@@ -49,6 +49,8 @@ Chart.defaults.set('plugins.datalabels', {
 })
 export class AppComponent implements OnInit {
 
+  public hotKeys: { key: string; count: number }[] = [];
+
   // --- CHART DATA CONFIGURATION ---
   public commandChartData: ChartConfiguration<'doughnut'>['data'] = {
     labels: [],
@@ -66,7 +68,7 @@ export class AppComponent implements OnInit {
     plugins: {
       legend: { position: 'right', labels: { boxWidth: 15, padding: 15 } },
       datalabels: {
-        display: true, 
+        display: true,
         color: '#ffffff',
         font: { weight: 'bold', size: 14 },
         formatter: (value) => value === 0 ? '' : value
@@ -98,7 +100,7 @@ export class AppComponent implements OnInit {
 
   @ViewChildren(BaseChartDirective) charts?: QueryList<BaseChartDirective>;
   @ViewChild('pieChart') pieChart?: BaseChartDirective;
-  
+
   // --- LINE CHARTS ---
   public cpuChartData: ChartConfiguration<'line'>['data'] = {
     labels: [], datasets: [{ data: [], label: 'CPU Usage (%)', borderColor: 'red', backgroundColor: 'rgba(255,0,0,0.2)', fill: true, tension: 0.4 }]
@@ -154,9 +156,14 @@ export class AppComponent implements OnInit {
       // Update the data object
       this.commandChartData.labels = stats.map(s => s.command.toUpperCase());
       this.commandChartData.datasets[0].data = stats.map(s => s.count);
-      
+
       // Manually tell the chart to redraw
       this.pieChart?.chart?.update();
+    });
+
+    // 4. Load Hot Keys
+    this.apiService.getHotKeys(isoString).subscribe(data => {
+      this.hotKeys = data;
     });
   }
 
@@ -185,7 +192,7 @@ export class AppComponent implements OnInit {
       let chartChanged = false;
       const labels = this.commandChartData.labels as string[];
       const data = this.commandChartData.datasets[0].data as number[];
-      
+
 
       newLogs.forEach(log => {
         const cmd = log.command.toUpperCase();
@@ -207,6 +214,23 @@ export class AppComponent implements OnInit {
         this.pieChart?.chart?.update();
       }
 
+      newLogs.forEach(log => {
+        if (!log.key) return; // Skip logs without keys (like PING)
+
+        const existingItem = this.hotKeys.find(i => i.key === log.key);
+        
+        if (existingItem) {
+          existingItem.count++;
+        } else {
+          this.hotKeys.push({ key: log.key, count: 1 });
+        }
+      });
+
+      this.hotKeys.sort((a, b) => b.count - a.count);
+      
+      if (this.hotKeys.length > 10) {
+        this.hotKeys = this.hotKeys.slice(0, 10);
+      }
     });
   }
 

@@ -279,3 +279,88 @@ canvas {
     color: #bdc3c7;
   }
 }
+
+/* Hot Keys Container */
+.hot-keys-container {
+  display: flex;
+  flex-direction: column;
+  height: 250px; /* Matches chart height */
+  overflow: hidden;
+}
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #95a5a6;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 5px;
+}
+
+.list-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-right: 5px;
+
+  /* Thin scrollbar */
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { background: #eee; border-radius: 4px; }
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 5px;
+  border-bottom: 1px solid #fcfcfc;
+  font-size: 0.9rem;
+
+  &:hover { background-color: #f8f9fa; }
+}
+
+.key-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 65%; 
+
+  .rank {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #bdc3c7;
+    min-width: 20px;
+  }
+
+  .key-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: 'Courier New', monospace;
+    color: #2c3e50;
+    font-weight: 600;
+  }
+}
+
+.count-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  width: 30%;
+
+  .count {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #34495e;
+  }
+
+  .progress-bar {
+    height: 4px;
+    background: #e74c3c; /* Red for HOT */
+    border-radius: 2px;
+    margin-top: 3px;
+    opacity: 0.8;
+    transition: width 0.3s ease;
+  }
+}

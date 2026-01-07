@@ -46,6 +46,38 @@
     <div class="charts-grid">
       
       <div class="chart-card">
+      <h3>🔥 Hot Key Leaderboard</h3>
+      
+      <div class="hot-keys-container">
+        <div class="list-header">
+          <span>Key Name</span>
+          <span>Hits</span>
+        </div>
+
+        <div class="list-body">
+          <div *ngFor="let item of hotKeys; let i = index" class="list-item">
+            
+            <div class="key-info">
+              <span class="rank">#{{ i + 1 }}</span>
+              <span class="key-name" title="{{ item.key }}">{{ item.key }}</span>
+            </div>
+            
+            <div class="count-visual">
+              <span class="count">{{ item.count }}</span>
+              <div class="progress-bar" 
+                  [style.width.%]="(item.count / (hotKeys[0]?.count || 1)) * 100">
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="hotKeys.length === 0" class="no-data-placeholder">
+            <p>No keys accessed yet</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+      <div class="chart-card">
         <h3>📊 Command Distribution</h3>
         <div class="chart-wrapper">
     
