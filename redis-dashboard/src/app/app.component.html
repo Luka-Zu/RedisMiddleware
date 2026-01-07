@@ -29,19 +29,56 @@
       <div class="value">{{ connectedClients }}</div>
     </div>
     <div class="card">
-      <h3>Live Status</h3>
-      <div class="value status-ok">CONNECTED</div>
+      <h3>Frag Ratio</h3>
+      <div class="value" [class.status-warn]="fragmentationRatio > 1.5">{{ fragmentationRatio | number:'1.2-2' }}</div>
+    </div>
+    <div class="card">
+      <h3>Evicted Keys</h3>
+      <div class="value">{{ evictedKeys }}</div>
     </div>
   </div>
 
   <div class="chart-container">
     <h2>Server Health (Live)</h2>
-    <div style="display: block;">
-      <canvas baseChart width="400" height="100"
-        [data]="lineChartData"
-        [options]="lineChartOptions"
-        [type]="'line'">
-      </canvas>
+    
+    <div class="charts-grid">
+      
+      <div class="chart-card">
+        <h3>🔥 CPU Usage (%)</h3>
+        <canvas baseChart 
+          [data]="cpuChartData"
+          [options]="commonOptions"
+          [type]="'line'">
+        </canvas>
+      </div>
+
+      <div class="chart-card">
+        <h3>🧠 Memory (RSS vs Used)</h3>
+        <canvas baseChart 
+          [data]="memoryChartData"
+          [options]="commonOptions"
+          [type]="'line'">
+        </canvas>
+      </div>
+
+      <div class="chart-card">
+        <h3>🌐 Network I/O (KB/s)</h3>
+        <canvas baseChart 
+          [data]="netChartData"
+          [options]="commonOptions"
+          [type]="'line'">
+        </canvas>
+      </div>
+
+      <div class="chart-card">
+        <h3>🎯 Cache Hits vs Misses</h3>
+        <canvas baseChart 
+          [data]="hitChartData"
+          [options]="commonOptions"
+          [type]="'line'">
+        </canvas>
+      </div>
+
     </div>
   </div>
 
@@ -62,7 +99,7 @@
         <tr *ngFor="let log of requestLogs" [class.error-row]="!log.isSuccess">
           <td>{{ log.timestamp | date:'HH:mm:ss' }}</td>
           <td><span class="badge">{{ log.command }}</span></td>
-          <td>{{ log.key }}</td>
+          <td class="key-col" title="{{log.key}}">{{ log.key }}</td>
           <td>{{ log.payloadSize }}</td>
           <td>{{ log.latencyMs }}</td>
           <td>

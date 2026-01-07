@@ -100,17 +100,33 @@ public class DatabaseService(IConfiguration config)
     {
         using var connection = new NpgsqlConnection(_connectionString);
         var sql = @"
-            SELECT 
-                timestamp, 
-                used_cpu_sys as UsedCpuSys, 
-                used_cpu_user as UsedCpuUser, 
-                used_memory as UsedMemory, 
-                connected_clients as ConnectedClients,
-                ops_per_sec as OpsPerSec
-            FROM server_metrics 
-            WHERE timestamp >= @Since
-            ORDER BY timestamp ASC
-            LIMIT 10000";         
+        SELECT 
+            timestamp, 
+            -- CPU
+            used_cpu_sys as UsedCpuSys, 
+            used_cpu_user as UsedCpuUser, 
+            
+            -- Memory Analysis
+            used_memory as UsedMemory, 
+            used_memory_rss as UsedMemoryRss,
+            fragmentation_ratio as FragmentationRatio,
+            evicted_keys as EvictedKeys,
+
+            -- Network I/O
+            input_kbps as InputKbps,
+            output_kbps as OutputKbps,
+
+            -- Cache Efficiency
+            keyspace_hits as KeyspaceHits,
+            keyspace_misses as KeyspaceMisses,
+
+            -- General Load
+            connected_clients as ConnectedClients,
+            ops_per_sec as OpsPerSec
+        FROM server_metrics 
+        WHERE timestamp >= @Since
+        ORDER BY timestamp ASC
+        LIMIT 30000";         
 
         return await connection.QueryAsync<ServerMetricLog>(sql, new { Since = since });
     }
