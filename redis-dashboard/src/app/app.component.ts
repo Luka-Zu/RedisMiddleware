@@ -7,6 +7,7 @@ import { format, subHours } from 'date-fns';
 import { RequestLog } from './interfaces/RequestLog';
 import { ServerMetric } from './interfaces/ServerMetric';
 import { Chart } from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 
 const verticalLinePlugin = {
   id: 'verticalLine',
@@ -34,8 +35,12 @@ const verticalLinePlugin = {
 };
 
 Chart.register(verticalLinePlugin);
+Chart.register(ChartDataLabels);
 
-
+// 2. DISABLE it globally by default (so it doesn't show on CPU/Memory charts)
+Chart.defaults.set('plugins.datalabels', {
+  display: false
+});
 
 @Component({
   selector: 'app-root',
@@ -43,6 +48,8 @@ Chart.register(verticalLinePlugin);
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
+
+  public pieChartPlugins = [ ChartDataLabels ];
 
   public commandChartData: ChartConfiguration<'doughnut'>['data'] = {
     labels: [],
@@ -59,14 +66,27 @@ export class AppComponent implements OnInit {
       }
     ]
   };
-
   public pieOptions: ChartOptions<'doughnut'> = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
-      legend: { position: 'right' }
+      legend: { position: 'right', labels: { boxWidth: 15, padding: 15 } },
+      
+      // DATALABELS CONFIG
+      datalabels: {
+        display: true, // <--- FORCE ENABLE for this chart only
+        color: '#ffffff',
+        font: {
+          weight: 'bold',
+          size: 14
+        },
+        formatter: (value, ctx) => {
+          if (value === 0) return '';
+          return value;
+        }
+      }
     }
   };
-
   // Shared Options for clean look
   public commonOptions: ChartOptions<'line'> = {
     responsive: true,
