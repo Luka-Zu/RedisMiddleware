@@ -16,6 +16,14 @@ public class MetricsController(DatabaseService db) : ControllerBase
             timeWindow = DateTime.SpecifyKind(timeWindow, DateTimeKind.Utc);
 
         var data = await db.GetServerMetricsSinceAsync(timeWindow);
+        
+        foreach (var item in data)
+        {
+            if (item.Timestamp.Kind == DateTimeKind.Unspecified)
+            {
+                item.Timestamp = DateTime.SpecifyKind(item.Timestamp, DateTimeKind.Utc);
+            }
+        }
         return Ok(data);
     }
 
@@ -28,6 +36,14 @@ public class MetricsController(DatabaseService db) : ControllerBase
             timeWindow = DateTime.SpecifyKind(timeWindow, DateTimeKind.Utc);
 
         var data = await db.GetRequestLogsSinceAsync(timeWindow);
+        
+        foreach (var item in data)
+        {
+            if (item.Timestamp.Kind == DateTimeKind.Unspecified)
+            {
+                item.Timestamp = DateTime.SpecifyKind(item.Timestamp, DateTimeKind.Utc);
+            }
+        }
         return Ok(data);
     }
 }
