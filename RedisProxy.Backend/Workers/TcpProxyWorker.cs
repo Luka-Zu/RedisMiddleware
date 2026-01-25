@@ -109,12 +109,13 @@ public class TcpProxyWorker(ILogger<TcpProxyWorker> logger,
             if (!string.IsNullOrEmpty(cmd))
             {
                 int logicalSize = EstimateRespPayloadSize(buffer, bytesRead);
-
+                string rawContent = System.Text.Encoding.UTF8.GetString(buffer, 0, bytesRead);
                 queue.Enqueue(new RequestContext
                 {
                     Command = cmd,
                     Key = key ?? "",
-                    PayloadSize = logicalSize // <--- Use the calculated logical size
+                    PayloadSize = logicalSize,
+                    RawContent = rawContent
                 });
             }
 
@@ -176,7 +177,8 @@ public class TcpProxyWorker(ILogger<TcpProxyWorker> logger,
             PayloadSize = request.PayloadSize,
             LatencyMs = Math.Round(latencyMs, 3), // Round to 3 decimal places
             IsSuccess = isSuccess,
-            IsHit = isHit
+            IsHit = isHit,
+            RawContent = request.RawContent
         });
     }
 
@@ -203,7 +205,7 @@ public class TcpProxyWorker(ILogger<TcpProxyWorker> logger,
                 var newAdvisories = new List<Advisory>();
                 foreach (var log in logsToSave)
                 {
-                    var alerts = advisoryService.AnalyzeLog(log);
+                    var alerts = advisoryService.AnalyzeLog(log, log.RawContent ?? "");
                     newAdvisories.AddRange(alerts);
                 }
 

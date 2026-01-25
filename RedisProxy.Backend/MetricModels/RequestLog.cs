@@ -13,4 +13,6 @@ public class RequestLog
     public bool IsSuccess { get; set; } // True if Redis didn't return an Error (-)
     public bool IsHit { get; set; }     // True if GET found data
     public int PayloadSize { get; set; }
+    
+    public string? RawContent { get; set; }
 }

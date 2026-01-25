@@ -15,7 +15,7 @@ public class AdvisoryService : IAdvisoryService
         "KEYS", "FLUSHALL", "FLUSHDB", "SAVE"
     };
 
-    public IEnumerable<Advisory> AnalyzeLog(RequestLog log)
+    public IEnumerable<Advisory> AnalyzeLog(RequestLog log, string rawContent)
     {
         var advisories = new List<Advisory>();
 
@@ -51,6 +51,51 @@ public class AdvisoryService : IAdvisoryService
                 Message = $"Slow query detected ({log.LatencyMs}ms). Check command complexity (O(N)) or network latency."
             });
         }
+        
+        // NEW 4: Using SELECT
+        if (log.Command.ToUpper() == "SELECT" && log.Key != "0") 
+        {
+            advisories.Add(new Advisory
+            {
+                Level = "Warning",
+                Command = "SELECT",
+                Message = "Anti-Pattern: Using multiple logical databases (SELECT) is deprecated in Cluster mode. Use separate Redis instances."
+            });
+        }
+        
+        // Rule 5: setting without ttl
+        if (log.Command.ToUpper() == "SET")
+        {
+            bool hasTTL = rawContent.Contains("EX", StringComparison.OrdinalIgnoreCase) || 
+                          rawContent.Contains("PX", StringComparison.OrdinalIgnoreCase);
+
+            if (!hasTTL)
+            {
+                advisories.Add(new Advisory
+                {
+                    Level = "Warning",
+                    Command = "SET",
+                    Message = $"Memory Risk: Key({log.Key}) cached without TTL (Expiration). It will never expire. Use 'SET ... EX 60'."
+                });
+            }
+        }
+        
+        // RULE 6: JSON Blob in String
+        if (log.Command.ToUpper() == "SET")
+        {
+            // Heuristic: Looks like JSON object "{" ... "}"
+            // We verify it starts/ends with braces and contains at least one colon
+            var val = rawContent.Trim();
+            if (val.Contains("{") && val.Contains("}") && val.Contains(":"))
+            {
+                advisories.Add(new Advisory
+                {
+                    Level = "Info",
+                    Command = "JSON",
+                    Message = "Data Modeling: Detected JSON blob. Consider using RedisJSON or Hash (HSET) for field-level updates."
+                });
+            }
+        }
 
         return advisories;
     }
@@ -59,5 +104,5 @@ public class AdvisoryService : IAdvisoryService
 
 public interface IAdvisoryService
 {
-    IEnumerable<Advisory> AnalyzeLog(RequestLog log);
+    IEnumerable<Advisory> AnalyzeLog(RequestLog log, string rawContent);
 }

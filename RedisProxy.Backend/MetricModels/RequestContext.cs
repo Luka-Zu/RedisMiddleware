@@ -9,4 +9,6 @@ public class RequestContext
     public int PayloadSize { get; set; }
     
     public long StartTimestamp { get; set; } = Stopwatch.GetTimestamp();
+    
+    public string RawContent { get; set; } = "";
 }
