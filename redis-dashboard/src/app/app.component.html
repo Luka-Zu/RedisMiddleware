@@ -8,12 +8,7 @@
 
       <div class="filter-control">
         <label for="startDate">Start from:</label>
-        <input 
-          type="datetime-local" 
-          id="startDate"
-          [(ngModel)]="dashboard.filterDate" 
-          (change)="onFilterChange()" 
-        />
+        <input type="datetime-local" id="startDate" [(ngModel)]="dashboard.filterDate" (change)="onFilterChange()" />
         <button (click)="onFilterChange()">Refresh</button>
       </div>
     </div>
@@ -24,18 +19,16 @@
       <h2>🩺 Redis Anti-Pattern Detector</h2>
       <span class="pulse-dot"></span>
     </div>
-    
+
     <div class="advisory-list">
-      <div *ngFor="let alert of dashboard.advisories" 
-           class="alert-card" 
-           [class.critical]="alert.level === 'Critical'"
-           [class.warning]="alert.level === 'Warning'">
-        
+      <div *ngFor="let alert of dashboard.advisories" class="alert-card" [class.critical]="alert.level === 'Critical'"
+        [class.warning]="alert.level === 'Warning'">
+
         <span class="close-advisory-btn" (click)="closeAdvisory(alert)">×</span>
         <div class="alert-icon">
           {{ alert.level === 'Critical' ? '⛔' : '⚠️' }}
         </div>
-        
+
         <div class="alert-content">
           <div class="alert-top">
             <span class="cmd-badge">{{ alert.command }}</span>
@@ -67,47 +60,46 @@
       <div class="value">{{ dashboard.evictedKeys }}</div>
     </div>
   </div>
-  
+
   <div class="chart-container">
     <h2>Server Health & Analysis</h2>
-    
-    <div class="charts-grid">
-      
-      <div class="chart-card">
-      <h3>🔥 Hot Key Leaderboard</h3>
-      
-      <div class="hot-keys-container">
-        <div class="list-header">
-          <span>Key Name</span>
-          <span>Hits</span>
-        </div>
 
-        <div class="list-body">
-          <div *ngFor="let item of dashboard.hotKeys; let i = index" class="list-item">
-            
-            <div class="key-info">
-              <span class="rank">#{{ i + 1 }}</span>
-              <span class="key-name" title="{{ item.key }}">{{ item.key }}</span>
-            </div>
-            
-            <div class="count-visual">
-              <span class="count">{{ item.count }}</span>
-              <div class="progress-bar" 
-                  [style.width.%]="(item.count / (dashboard.hotKeys[0].count || 1)) * 100">
-              </div>
-            </div>
+    <div class="charts-grid">
+
+      <div class="chart-card">
+        <h3>🔥 Hot Key Leaderboard</h3>
+
+        <div class="hot-keys-container">
+          <div class="list-header">
+            <span>Key Name</span>
+            <span>Hits</span>
           </div>
 
-          <div *ngIf="dashboard.hotKeys.length === 0" class="no-data-placeholder">
-            <p>No keys accessed yet</p>
+          <div class="list-body">
+            <div *ngFor="let item of dashboard.hotKeys; let i = index" class="list-item">
+
+              <div class="key-info">
+                <span class="rank">#{{ i + 1 }}</span>
+                <span class="key-name" title="{{ item.key }}">{{ item.key }}</span>
+              </div>
+
+              <div class="count-visual">
+                <span class="count">{{ item.count }}</span>
+                <div class="progress-bar" [style.width.%]="(item.count / (dashboard.hotKeys[0].count || 1)) * 100">
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="dashboard.hotKeys.length === 0" class="no-data-placeholder">
+              <p>No keys accessed yet</p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="chart-card x-ray-card">
+      <div class="chart-card x-ray-card">
         <h3>🔬 Keyspace X-Ray</h3>
-        
+
         <div class="x-ray-container">
           <ng-container *ngTemplateOutlet="nodeTemplate; context:{ $implicit: dashboard.keyspaceRoot }">
           </ng-container>
@@ -122,18 +114,17 @@
 
       <ng-template #nodeTemplate let-node>
         <div class="tree-node" *ngIf="node">
-          
+
           <ng-container *ngFor="let child of node.children">
-            
+
             <div class="node-row">
               <div class="node-info">
                 <span class="node-name">{{ child.name }}</span>
                 <span class="node-count">{{ child.value }}</span>
               </div>
-              
+
               <div class="node-bar-bg">
-                <div class="node-bar-fill" 
-                     [style.width.%]="(child.value / (node.value || 1)) * 100">
+                <div class="node-bar-fill" [style.width.%]="(child.value / (node.value || 1)) * 100">
                 </div>
               </div>
             </div>
@@ -149,16 +140,13 @@
 
       <div class="chart-card">
         <div class="card-header-row">
-           <h3>📊 Command Distribution</h3>
-           <span class="expand-icon">⤢</span>
+          <h3>📊 Command Distribution</h3>
+          <span class="expand-icon">⤢</span>
         </div>
         <div class="chart-wrapper">
-    
+
           <ng-container *ngIf="dashboard.commandChartData.datasets[0].data.length > 0; else noData">
-            <canvas baseChart 
-              #pieChart="base-chart"
-              [data]="dashboard.commandChartData" 
-              [options]="pieOptions" 
+            <canvas baseChart #pieChart="base-chart" [data]="dashboard.commandChartData" [options]="pieOptions"
               [type]="'doughnut'">
             </canvas>
           </ng-container>
@@ -181,10 +169,7 @@
           <span class="expand-icon">⤢</span>
         </div>
         <div class="chart-wrapper" (mouseleave)="chartMouseLeave()">
-          <canvas baseChart 
-            [data]="dashboard.cpuChartData" 
-            [options]="commonOptions"
-            [type]="'line'">
+          <canvas baseChart [data]="dashboard.cpuChartData" [options]="commonOptions" [type]="'line'">
           </canvas>
         </div>
       </div>
@@ -196,10 +181,7 @@
           <span class="expand-icon">⤢</span>
         </div>
         <div class="chart-wrapper" (mouseleave)="chartMouseLeave()">
-          <canvas baseChart 
-            [data]="dashboard.latencyChartData" 
-            [options]="commonOptions"
-            [type]="'line'">
+          <canvas baseChart [data]="dashboard.latencyChartData" [options]="commonOptions" [type]="'line'">
           </canvas>
         </div>
       </div>
@@ -211,10 +193,7 @@
           <span class="expand-icon">⤢</span>
         </div>
         <div class="chart-wrapper" (mouseleave)="chartMouseLeave()">
-          <canvas baseChart 
-            [data]="dashboard.memoryChartData" 
-            [options]="commonOptions"
-            [type]="'line'">
+          <canvas baseChart [data]="dashboard.memoryChartData" [options]="commonOptions" [type]="'line'">
           </canvas>
         </div>
       </div>
@@ -226,10 +205,7 @@
           <span class="expand-icon">⤢</span>
         </div>
         <div class="chart-wrapper" (mouseleave)="chartMouseLeave()">
-          <canvas baseChart 
-            [data]="dashboard.netChartData" 
-            [options]="commonOptions"
-            [type]="'line'">
+          <canvas baseChart [data]="dashboard.netChartData" [options]="commonOptions" [type]="'line'">
           </canvas>
         </div>
       </div>
@@ -241,10 +217,7 @@
           <span class="expand-icon">⤢</span>
         </div>
         <div class="chart-wrapper" (mouseleave)="chartMouseLeave()">
-          <canvas baseChart 
-            [data]="dashboard.hitChartData" 
-            [options]="commonOptions"
-            [type]="'line'">
+          <canvas baseChart [data]="dashboard.hitChartData" [options]="commonOptions" [type]="'line'">
           </canvas>
         </div>
       </div>
@@ -254,47 +227,49 @@
 
   <div class="table-container">
     <h2>Recent Traffic Inspection</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Time</th>
-          <th>Command</th>
-          <th style="width: 40%">Key</th> <th>Payload (Bytes)</th>
-          <th>Latency (ms)</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let log of dashboard.requestLogs" [class.error-row]="!log.isSuccess">
-          <td>{{ log.timestamp | date:'HH:mm:ss' }}</td>
-          <td><span class="badge">{{ log.command }}</span></td>
-          <td class="key-col" title="{{log.key}}">{{ log.key }}</td>
-          <td>{{ log.payloadSize }}</td>
-          <td>{{ log.latencyMs }}</td>
-          <td>
-            <span *ngIf="log.isHit" class="tag hit">HIT</span>
-            <span *ngIf="!log.isHit && log.command === 'GET'" class="tag miss">MISS</span>
-            <span *ngIf="!log.isSuccess" class="tag error">ERR</span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+
+    <div class="table-scroll-area">
+      <table>
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Command</th>
+            <th style="width: 40%">Key</th>
+            <th>Payload (Bytes)</th>
+            <th>Latency (ms)</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let log of dashboard.requestLogs" [class.error-row]="!log.isSuccess">
+            <td>{{ log.timestamp | date:'HH:mm:ss' }}</td>
+            <td><span class="badge">{{ log.command }}</span></td>
+            <td class="key-col" title="{{log.key}}">{{ log.key }}</td>
+            <td>{{ log.payloadSize }}</td>
+            <td>{{ log.latencyMs }}</td>
+            <td>
+              <span *ngIf="log.isHit" class="tag hit">HIT</span>
+              <span *ngIf="!log.isHit && log.command === 'GET'" class="tag miss">MISS</span>
+              <span *ngIf="!log.isSuccess" class="tag error">ERR</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
+
 </div>
 
 <div class="modal-overlay" *ngIf="isModalOpen" (click)="closeModal()">
   <div class="modal-content" (click)="stopPropagation($event)">
-    
+
     <div class="modal-header">
       <h2>{{ modalTitle }}</h2>
       <button class="close-btn" (click)="closeModal()">×</button>
     </div>
 
     <div class="modal-body" (mouseleave)="chartMouseLeave()">
-      <canvas baseChart 
-        [data]="modalChartData"
-        [options]="modalChartOptions"
-        [plugins]="modalPlugins"
+      <canvas baseChart [data]="modalChartData" [options]="modalChartOptions" [plugins]="modalPlugins"
         [type]="modalChartType">
       </canvas>
     </div>

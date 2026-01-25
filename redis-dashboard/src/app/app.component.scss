@@ -168,12 +168,13 @@ canvas {
 }
 
 /* --- LOGS TABLE --- */
+/* --- LOGS TABLE --- */
 .table-container {
   background: #fff;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  overflow-x: auto; /* Scrollable on small screens */
+  /* Removed overflow-x here, moving it to the wrapper */
 
   h2 {
     font-size: 1.2rem;
@@ -181,10 +182,36 @@ canvas {
     margin-bottom: 15px;
     color: #34495e;
   }
+}
+
+/* NEW: The scrollable wrapper */
+.table-scroll-area {
+  max-height: 500px; /* Limits height to approx 10 rows */
+  overflow-y: auto;  /* Enables vertical scrolling */
+  overflow-x: auto;  /* Enables horizontal scrolling if needed */
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+
+  /* Custom Scrollbar Styling */
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #f8f9fa;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #bdc3c7;
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: #95a5a6;
+  }
 
   table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate; /* Required for sticky headers in some browsers */
+    border-spacing: 0;
     
     th {
       text-align: left;
@@ -193,6 +220,13 @@ canvas {
       color: #7f8c8d;
       font-weight: 600;
       font-size: 0.9rem;
+      
+      /* STICKY HEADER MAGIC */
+      position: sticky;
+      top: 0;
+      background-color: #fff; /* Must have background to cover scrolling text */
+      z-index: 10;
+      box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1);
     }
 
     td {
