@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { Subject } from 'rxjs';
 import { Advisory } from '../interfaces/Advisory';
+import { KeyNode } from '../interfaces/KeyNode';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +14,9 @@ export class SignalrService {
   public serverMetrics$ = new Subject<any>();
   public requestLogs$ = new Subject<any[]>();
   public advisories$ = new Subject<Advisory[]>();
-  
+  public keyspace$ = new Subject<KeyNode>();
+
+
   constructor() {
     this.hubConnection = new signalR.HubConnectionBuilder()
       .withUrl('http://localhost:5000/hubs/metrics', {
@@ -43,6 +46,10 @@ export class SignalrService {
 
     this.hubConnection.on('ReceiveAdvisories', (data: Advisory[]) => {
       this.advisories$.next(data);
+    });
+
+    this.hubConnection.on('ReceiveKeyspaceUpdate', (data: KeyNode) => {
+        this.keyspace$.next(data);
     });
   }
 }

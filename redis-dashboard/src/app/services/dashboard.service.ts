@@ -8,6 +8,7 @@ import { ServerMetric } from '../interfaces/ServerMetric'; //
 import { RequestLog } from '../interfaces/RequestLog'; //
 import { getPercentile, shiftChart } from '../utils/chart-utils';
 import { Advisory } from '../interfaces/Advisory';
+import { KeyNode } from '../interfaces/KeyNode';
 
 @Injectable({
   providedIn: 'root'
@@ -20,7 +21,7 @@ export class DashboardService {
   public fragmentationRatio = 0;
   public evictedKeys = 0;
   public advisories: Advisory[] = [];
-  
+  public keyspaceRoot: KeyNode | null = null;
   public requestLogs: RequestLog[] = [];
   public hotKeys: { key: string; count: number }[] = [];
 
@@ -127,43 +128,47 @@ export class DashboardService {
 
     // Logs
     this.signalRService.requestLogs$.subscribe((newLogs: RequestLog[]) => {
-      // 1. Update Table
-      this.requestLogs = [...newLogs, ...this.requestLogs].slice(0, 1000); // Fixed slice limit
+        // 1. Update Table
+        this.requestLogs = [...newLogs, ...this.requestLogs].slice(0, 1000); // Fixed slice limit
 
-      // 2. Update Pie Chart Logic
-      let chartChanged = false;
-      const labels = this.commandChartData.labels as string[];
-      const data = this.commandChartData.datasets[0].data as number[];
+        // 2. Update Pie Chart Logic
+        let chartChanged = false;
+        const labels = this.commandChartData.labels as string[];
+        const data = this.commandChartData.datasets[0].data as number[];
 
-      newLogs.forEach(log => {
+        newLogs.forEach(log => {
         const cmd = log.command.toUpperCase();
         const index = labels.indexOf(cmd);
         if (index !== -1) {
-          data[index] = Number(data[index]) + 1;
-          chartChanged = true;
+            data[index] = Number(data[index]) + 1;
+            chartChanged = true;
         } else {
-          labels.push(cmd);
-          data.push(1);
-          chartChanged = true;
+            labels.push(cmd);
+            data.push(1);
+            chartChanged = true;
         }
-      });
-      if (chartChanged) this.pieChartUpdate$.next(true);
+        });
+        if (chartChanged) this.pieChartUpdate$.next(true);
 
-      // 3. Update Hot Keys
-      newLogs.forEach(log => {
+        // 3. Update Hot Keys
+        newLogs.forEach(log => {
         if (!log.key) return;
         const existingItem = this.hotKeys.find(i => i.key === log.key);
         if (existingItem) existingItem.count++;
         else this.hotKeys.push({ key: log.key, count: 1 });
-      });
-      this.hotKeys.sort((a, b) => b.count - a.count);
-      if (this.hotKeys.length > 10) this.hotKeys = this.hotKeys.slice(0, 10);
+        });
+        this.hotKeys.sort((a, b) => b.count - a.count);
+        if (this.hotKeys.length > 10) this.hotKeys = this.hotKeys.slice(0, 10);
 
-      // 4. Update Latency Window
-      newLogs.forEach(log => this.latencyWindow.push(log.latencyMs));
-      if (this.latencyWindow.length > 200) {
+        // 4. Update Latency Window
+        newLogs.forEach(log => this.latencyWindow.push(log.latencyMs));
+        if (this.latencyWindow.length > 200) {
         this.latencyWindow = this.latencyWindow.slice(this.latencyWindow.length - 200);
-      }
+        }
+
+        this.signalRService.keyspace$.subscribe((root: KeyNode) => {
+            this.keyspaceRoot = root;
+        });
     });
 
     this.signalRService.advisories$.subscribe((newAlerts: Advisory[]) => {

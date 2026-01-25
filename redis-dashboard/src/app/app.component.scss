@@ -624,3 +624,69 @@ canvas {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* KEYSPACE X-RAY STYLES */
+.x-ray-card {
+  /* Make it span 2 rows if your grid allows, or just tall */
+  grid-row: span 2; 
+}
+
+.x-ray-container {
+  overflow-y: auto;
+  flex-grow: 1;
+  padding-right: 5px;
+  font-size: 0.9rem;
+}
+
+.tree-node {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.node-row {
+  margin-bottom: 4px;
+  
+  &:hover .node-name {
+    color: #3498db;
+    font-weight: 700;
+  }
+}
+
+.node-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2px;
+  font-size: 0.85rem;
+  color: #34495e;
+}
+
+.node-name {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+}
+
+.node-count {
+  font-size: 0.75rem;
+  color: #95a5a6;
+}
+
+.node-bar-bg {
+  height: 4px;
+  background-color: #f1f2f6;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.node-bar-fill {
+  height: 100%;
+  background-color: #3498db; /* Blue */
+  border-radius: 2px;
+}
+
+/* Indentation for children */
+.node-children {
+  margin-left: 15px; /* Indent */
+  padding-left: 10px;
+  border-left: 1px dashed #e0e0e0; /* Guide line */
+}

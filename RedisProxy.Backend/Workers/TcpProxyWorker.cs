@@ -17,6 +17,7 @@ public class TcpProxyWorker(ILogger<TcpProxyWorker> logger,
     IRespParser parser, 
     DatabaseService db,
     IAdvisoryService advisoryService,
+    IKeyspaceService keyspaceService,
     IHubContext<MetricsHub, IMetricsClient> hub) : BackgroundService
 {
     private const int LocalPort = 6380;
@@ -214,6 +215,17 @@ public class TcpProxyWorker(ILogger<TcpProxyWorker> logger,
                     // Broadcast alerts to frontend
                     await hub.Clients.All.ReceiveAdvisories(newAdvisories);
                 }
+                
+                foreach (var log in logsToSave)
+                {
+                    if (!string.IsNullOrEmpty(log.Key))
+                    {
+                        keyspaceService.AnalyzeKey(log.Key);
+                    }
+                }
+
+                var snapshot = keyspaceService.GetSnapshot();
+                await hub.Clients.All.ReceiveKeyspaceUpdate(snapshot);
                 
                 logger.LogInformation($"Flushed {logsToSave.Count} request logs.");
             }

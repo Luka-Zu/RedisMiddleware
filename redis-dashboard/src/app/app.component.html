@@ -105,6 +105,48 @@
       </div>
     </div>
 
+    <div class="chart-card x-ray-card">
+        <h3>🔬 Keyspace X-Ray</h3>
+        
+        <div class="x-ray-container">
+          <ng-container *ngTemplateOutlet="nodeTemplate; context:{ $implicit: dashboard.keyspaceRoot }">
+          </ng-container>
+        </div>
+
+        <ng-template #noData>
+          <div class="no-data-placeholder">
+            <p>Waiting for data...</p>
+          </div>
+        </ng-template>
+      </div>
+
+      <ng-template #nodeTemplate let-node>
+        <div class="tree-node" *ngIf="node">
+          
+          <ng-container *ngFor="let child of node.children">
+            
+            <div class="node-row">
+              <div class="node-info">
+                <span class="node-name">{{ child.name }}</span>
+                <span class="node-count">{{ child.value }}</span>
+              </div>
+              
+              <div class="node-bar-bg">
+                <div class="node-bar-fill" 
+                     [style.width.%]="(child.value / (node.value || 1)) * 100">
+                </div>
+              </div>
+            </div>
+
+            <div class="node-children" *ngIf="child.children && child.children.length > 0">
+              <ng-container *ngTemplateOutlet="nodeTemplate; context:{ $implicit: child }">
+              </ng-container>
+            </div>
+
+          </ng-container>
+        </div>
+      </ng-template>
+
       <div class="chart-card">
         <div class="card-header-row">
            <h3>📊 Command Distribution</h3>
