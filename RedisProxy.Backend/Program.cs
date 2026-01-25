@@ -1,6 +1,7 @@
 using RedisProxy.Backend.Data;
 using RedisProxy.Backend.Hubs;
 using RedisProxy.Backend.RespParser;
+using RedisProxy.Backend.Services;
 using RedisProxy.Backend.Workers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. Services
 builder.Services.AddSingleton<DatabaseService>();
 builder.Services.AddSingleton<IRespParser, RespParser>();
+builder.Services.AddSingleton<IAdvisoryService, AdvisoryService>();
 
 builder.Services.AddHostedService<TcpProxyWorker>();
 builder.Services.AddHostedService<RedisMonitorWorker>();

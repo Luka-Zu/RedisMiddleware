@@ -8,12 +8,14 @@ using RedisProxy.Backend.Hubs;
 using RedisProxy.Backend.Metric;
 using RedisProxy.Backend.MetricModels;
 using RedisProxy.Backend.RespParser;
+using RedisProxy.Backend.Services;
 
 namespace RedisProxy.Backend.Workers;
 
 public class TcpProxyWorker(ILogger<TcpProxyWorker> logger, 
     IRespParser parser, 
     DatabaseService db,
+    IAdvisoryService advisoryService,
     IHubContext<MetricsHub, IMetricsClient> hub) : BackgroundService
 {
     private const int LocalPort = 6380;
@@ -169,6 +171,20 @@ public class TcpProxyWorker(ILogger<TcpProxyWorker> logger,
                 await db.SaveRequestLogsAsync(logsToSave);
                 // We send the latest batch to Angular immediately
                 await hub.Clients.All.ReceiveRequestLogUpdate(logsToSave);
+                
+                var newAdvisories = new List<Advisory>();
+                foreach (var log in logsToSave)
+                {
+                    var alerts = advisoryService.AnalyzeLog(log);
+                    newAdvisories.AddRange(alerts);
+                }
+
+                if (newAdvisories.Count > 0)
+                {
+                    // Broadcast alerts to frontend
+                    await hub.Clients.All.ReceiveAdvisories(newAdvisories);
+                }
+                
                 logger.LogInformation($"Flushed {logsToSave.Count} request logs.");
             }
             catch (Exception ex)
