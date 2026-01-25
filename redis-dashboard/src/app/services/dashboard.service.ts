@@ -113,6 +113,49 @@ export class DashboardService {
     this.apiService.getHotKeys(isoString).subscribe(data => {
       this.hotKeys = data;
     });
+
+    // 5. Key Space
+    this.apiService.getKeyspace(isoString).subscribe((root: KeyNode) => {
+      this.keyspaceRoot = root;
+    });
+  }
+
+  private mergeKeyspace(newRoot: KeyNode) {
+    // 1. If we have no history yet, just take the new snapshot
+    if (!this.keyspaceRoot) {
+      this.keyspaceRoot = newRoot;
+      return;
+    }
+
+    // 2. Update the total root count
+    this.keyspaceRoot.value += newRoot.value;
+
+    // 3. Recursively merge the children
+    this.mergeChildren(this.keyspaceRoot, newRoot.children);
+  }
+
+  private mergeChildren(targetNode: KeyNode, sourceChildren: KeyNode[]) {
+    if (!sourceChildren) return;
+
+    for (const sourceChild of sourceChildren) {
+      // Try to find the matching node in our existing tree (e.g. find "user" inside root)
+      const targetChild = targetNode.children.find(c => c.name === sourceChild.name);
+
+      if (targetChild) {
+        // CASE A: Node exists. Add the hits and recurse deeper.
+        targetChild.value += sourceChild.value;
+        
+        if (sourceChild.children && sourceChild.children.length > 0) {
+          this.mergeChildren(targetChild, sourceChild.children);
+        }
+      } else {
+        // CASE B: New pattern detected. Add the whole branch.
+        targetNode.children.push(sourceChild);
+      }
+    }
+
+    // 4. Re-sort the list so "Hot" items bubble to the top visually
+    targetNode.children.sort((a, b) => b.value - a.value);
   }
 
   private subscribeToRealtimeEvents() {
@@ -166,9 +209,7 @@ export class DashboardService {
         this.latencyWindow = this.latencyWindow.slice(this.latencyWindow.length - 200);
         }
 
-        this.signalRService.keyspace$.subscribe((root: KeyNode) => {
-            this.keyspaceRoot = root;
-        });
+    
     });
 
     this.signalRService.advisories$.subscribe((newAlerts: Advisory[]) => {
@@ -181,6 +222,10 @@ export class DashboardService {
           this.removeAdvisory(alert);
         }, 30000);
       });
+    });
+
+    this.signalRService.keyspace$.subscribe((miniSnapshot: KeyNode) => {
+      this.mergeKeyspace(miniSnapshot);
     });
     
   }

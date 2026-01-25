@@ -186,4 +186,19 @@ public class DatabaseService(IConfiguration config)
         return await connection.QueryAsync<HotKeyStat>(sql, new { Since = since });
     }
     
+    public async Task<IEnumerable<string>> GetKeysSinceAsync(DateTime since)
+    {
+        await using var connection = new NpgsqlConnection(_connectionString);
+        var sql = @"
+            SELECT key_name 
+            FROM request_logs 
+            WHERE timestamp >= @Since 
+              AND key_name IS NOT NULL 
+              AND key_name != ''
+            -- Limit to prevent exploding CPU if you have millions of logs
+            LIMIT 100000"; 
+
+        return await connection.QueryAsync<string>(sql, new { Since = since });
+    }
+    
 }

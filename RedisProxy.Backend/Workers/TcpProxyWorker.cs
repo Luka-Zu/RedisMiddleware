@@ -216,16 +216,17 @@ public class TcpProxyWorker(ILogger<TcpProxyWorker> logger,
                     await hub.Clients.All.ReceiveAdvisories(newAdvisories);
                 }
                 
-                foreach (var log in logsToSave)
-                {
-                    if (!string.IsNullOrEmpty(log.Key))
-                    {
-                        keyspaceService.AnalyzeKey(log.Key);
-                    }
-                }
-
-                var snapshot = keyspaceService.GetSnapshot();
-                await hub.Clients.All.ReceiveKeyspaceUpdate(snapshot);
+                var keys = logsToSave.Select(l => l.Key).Where(k => !string.IsNullOrEmpty(k));
+                var miniSnapshot = keyspaceService.BuildTree(keys);
+                
+                // Send this "Mini Update" to the frontend.
+                // NOTE: Frontend needs to know how to merge this or just display it.
+                // For simplicity in this Thesis, let's just trigger the frontend 
+                // to re-fetch the full tree if we want perfect accuracy, 
+                // OR just accept that the real-time view only shows "Latest Batch X-Ray".
+                
+                await hub.Clients.All.ReceiveKeyspaceUpdate(miniSnapshot);
+                
                 
                 logger.LogInformation($"Flushed {logsToSave.Count} request logs.");
             }

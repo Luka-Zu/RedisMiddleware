@@ -1,78 +1,87 @@
-using System.Collections.Concurrent;
+using RedisProxy.Backend.Data;
 using RedisProxy.Backend.MetricModels;
 
 namespace RedisProxy.Backend.Services;
 
 public interface IKeyspaceService
 {
-    void AnalyzeKey(string key);
-    KeyNode GetSnapshot();
+    // Now returns a Task because it needs to query DB
+    Task<KeyNode> GetKeyspaceSnapshotAsync(DateTime since);
+    
+    // We keep this helper public if we want to use it for real-time incremental updates later
+    KeyNode BuildTree(IEnumerable<string> keys); 
 }
 
-public class KeyspaceService : IKeyspaceService
+public class KeyspaceService(DatabaseService db) : IKeyspaceService
 {
-    private readonly ConcurrentDictionary<string, NodeData> _root = new();
-
-    private class NodeData
+    public async Task<KeyNode> GetKeyspaceSnapshotAsync(DateTime since)
     {
-        public long Count;
-        public ConcurrentDictionary<string, NodeData> Children = new();
+        // 1. Get raw keys from DB based on time window
+        var keys = await db.GetKeysSinceAsync(since);
+
+        // 2. Build tree on the fly (Stateless)
+        return BuildTree(keys);
     }
 
-    public void AnalyzeKey(string key)
+    public KeyNode BuildTree(IEnumerable<string> keys)
     {
-        if (string.IsNullOrEmpty(key)) return;
+        var root = new NodeData();
 
-        var parts = key.Split(new[] { ':', '/', '_' }, StringSplitOptions.RemoveEmptyEntries);
-        var currentLevel = _root;
-
-        foreach (var part in parts)
+        foreach (var key in keys)
         {
-            string segment = NormalizeSegment(part);
-            
-            var node = currentLevel.GetOrAdd(segment, _ => new NodeData());
-            
-            Interlocked.Increment(ref node.Count);
-            
-            currentLevel = node.Children;
+            // Split by common delimiters
+            var parts = key.Split(new[] { ':', '/', '_' }, StringSplitOptions.RemoveEmptyEntries);
+            var currentLevel = root;
+
+            foreach (var part in parts)
+            {
+                string segment = NormalizeSegment(part);
+
+                if (!currentLevel.Children.TryGetValue(segment, out var node))
+                {
+                    node = new NodeData { Segment = segment };
+                    currentLevel.Children[segment] = node;
+                }
+                
+                node.Count++;
+                currentLevel = node; // Move down
+            }
         }
+
+        // Convert to the Clean KeyNode model for Frontend
+        return new KeyNode
+        {
+            Name = "root",
+            Value = root.Children.Values.Sum(x => x.Count),
+            Children = ConvertToNodes(root.Children)
+        };
+    }
+
+    // Internal helper class for construction
+    private class NodeData
+    {
+        public string Segment = "";
+        public long Count;
+        public Dictionary<string, NodeData> Children = new();
     }
 
     private string NormalizeSegment(string segment)
     {
-        if (long.TryParse(segment, out _) || Guid.TryParse(segment, out _))
-        {
-            return "{id}";
-        }
-        if (segment.Length > 20) 
-        {
-            return "{token}";
-        }
+        if (long.TryParse(segment, out _) || Guid.TryParse(segment, out _)) return "{id}";
+        if (segment.Length > 20) return "{token}";
         return segment;
     }
 
-    public KeyNode GetSnapshot()
+    private List<KeyNode> ConvertToNodes(Dictionary<string, NodeData> source)
     {
-        return new KeyNode
-        {
-            Name = "root",
-            Children = ConvertToNodes(_root),
-            Value = _root.Values.Sum(x => x.Count)
-        };
-    }
-
-    private List<KeyNode> ConvertToNodes(ConcurrentDictionary<string, NodeData> source)
-    {
-        var list = new List<KeyNode>();
-        foreach (var kvp in source)
-        {
-            list.Add(new KeyNode
+        return source.Values
+            .Select(n => new KeyNode
             {
-                Name = kvp.Key,
-                Value = kvp.Value.Count, // Get current count
-                Children = ConvertToNodes(kvp.Value.Children)
-            });
-        }
-        return list.OrderByDescending(n => n.Value).ToList();
+                Name = n.Segment,
+                Value = n.Count,
+                Children = ConvertToNodes(n.Children)
+            })
+            .OrderByDescending(n => n.Value)
+            .ToList();
     }
 }

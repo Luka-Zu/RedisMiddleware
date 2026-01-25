@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using RedisProxy.Backend.Data;
+using RedisProxy.Backend.Services;
 
 namespace RedisProxy.Backend.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class MetricsController(DatabaseService dbService) : ControllerBase
+public class MetricsController(DatabaseService dbService, IKeyspaceService keyspaceService) : ControllerBase
 {
     [HttpGet("server/history")]
     public async Task<IActionResult> GetServerHistory([FromQuery] DateTime? from)
@@ -66,6 +67,19 @@ public class MetricsController(DatabaseService dbService) : ControllerBase
     
         var stats = await dbService.GetHotKeysAsync(from);
         return Ok(stats);
+    }
+    
+    [HttpGet("keyspace")]
+    public async Task<IActionResult> GetKeyspace([FromQuery] DateTime? from)
+    {
+        // Default to 1 hour if not provided
+        var timeWindow = from ?? DateTime.UtcNow.AddHours(-1);
+        
+        if (timeWindow.Kind == DateTimeKind.Unspecified)
+            timeWindow = DateTime.SpecifyKind(timeWindow, DateTimeKind.Utc);
+
+        var snapshot = await keyspaceService.GetKeyspaceSnapshotAsync(timeWindow);
+        return Ok(snapshot);
     }
     
 }

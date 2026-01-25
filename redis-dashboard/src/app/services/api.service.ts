@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { KeyNode } from '../interfaces/KeyNode';
 
 @Injectable({
   providedIn: 'root'
@@ -40,6 +41,10 @@ export class ApiService {
       params = params.set('from', fromTime);
     }
     return this.http.get<any[]>(`${this.baseUrl}/keys/hot`, { params });
+  }
+
+  public getKeyspace(isoDate: string): Observable<KeyNode> {
+    return this.http.get<KeyNode>(`${this.baseUrl}/keyspace?from=${isoDate}`);
   }
   
 }
