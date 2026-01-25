@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { Subject } from 'rxjs';
+import { Advisory } from '../interfaces/Advisory';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +12,8 @@ export class SignalrService {
   // RXJS Subjects to broadcast data to components
   public serverMetrics$ = new Subject<any>();
   public requestLogs$ = new Subject<any[]>();
-
+  public advisories$ = new Subject<Advisory[]>();
+  
   constructor() {
     this.hubConnection = new signalR.HubConnectionBuilder()
       .withUrl('http://localhost:5000/hubs/metrics', {
@@ -37,6 +39,10 @@ export class SignalrService {
     // Listen for "ReceiveRequestLogUpdate" from .NET Backend
     this.hubConnection.on('ReceiveRequestLogUpdate', (data) => {
       this.requestLogs$.next(data);
+    });
+
+    this.hubConnection.on('ReceiveAdvisories', (data: Advisory[]) => {
+      this.advisories$.next(data);
     });
   }
 }

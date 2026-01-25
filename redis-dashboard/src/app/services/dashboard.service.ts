@@ -7,6 +7,7 @@ import { SignalrService } from './signalr.service'; //
 import { ServerMetric } from '../interfaces/ServerMetric'; //
 import { RequestLog } from '../interfaces/RequestLog'; //
 import { getPercentile, shiftChart } from '../utils/chart-utils';
+import { Advisory } from '../interfaces/Advisory';
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +19,7 @@ export class DashboardService {
   public connectedClients = 0;
   public fragmentationRatio = 0;
   public evictedKeys = 0;
+  public advisories: Advisory[] = [];
   
   public requestLogs: RequestLog[] = [];
   public hotKeys: { key: string; count: number }[] = [];
@@ -163,6 +165,19 @@ export class DashboardService {
         this.latencyWindow = this.latencyWindow.slice(this.latencyWindow.length - 200);
       }
     });
+
+    this.signalRService.advisories$.subscribe((newAlerts: Advisory[]) => {
+      // 1. Add new alerts to the top
+      this.advisories = [...newAlerts, ...this.advisories].slice(0, 20);
+
+      // 2. Schedule Auto-Removal for EACH new alert
+      newAlerts.forEach(alert => {
+        setTimeout(() => {
+          this.removeAdvisory(alert);
+        }, 30000);
+      });
+    });
+    
   }
 
   private processMetric(metric: ServerMetric, isRealtime: boolean) {
@@ -228,5 +243,9 @@ export class DashboardService {
     reset(this.hitChartData);
     reset(this.latencyChartData);
     this.latencyWindow = [];
+  }
+
+  public removeAdvisory(alertToRemove: Advisory) {
+    this.advisories = this.advisories.filter(a => a !== alertToRemove);
   }
 }

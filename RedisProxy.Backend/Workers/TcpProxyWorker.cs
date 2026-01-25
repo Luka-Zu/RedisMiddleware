@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.SignalR;
 using RedisProxy.Backend.Data;
 using RedisProxy.Backend.Hubs;
@@ -48,6 +49,31 @@ public class TcpProxyWorker(ILogger<TcpProxyWorker> logger,
             _ = HandleClientAsync(client, stoppingToken);
         }
     }
+    
+    private int EstimateRespPayloadSize(byte[] buffer, int bytesRead)
+    {
+        try 
+        {
+            string content = System.Text.Encoding.UTF8.GetString(buffer, 0, bytesRead);
+
+            var matches = Regex.Matches(content, @"\$(\d+)");
+
+            int maxDeclaredSize = 0;
+            foreach (Match match in matches)
+            {
+                if (int.TryParse(match.Groups[1].Value, out int size))
+                {
+                    if (size > maxDeclaredSize) maxDeclaredSize = size;
+                }
+            }
+
+            return Math.Max(maxDeclaredSize, bytesRead);
+        }
+        catch 
+        {
+            return bytesRead; // Fallback on error
+        }
+    }
 
     private async Task HandleClientAsync(TcpClient client, CancellationToken ct)
     {
@@ -73,7 +99,7 @@ public class TcpProxyWorker(ILogger<TcpProxyWorker> logger,
 
     private async Task HandleUpstream(NetworkStream input, NetworkStream output, ConcurrentQueue<RequestContext> queue, CancellationToken ct)
     {
-        var buffer = new byte[8192];
+        var buffer = new byte[65536];
         int bytesRead;
 
         while ((bytesRead = await input.ReadAsync(buffer, ct)) > 0)
@@ -82,11 +108,13 @@ public class TcpProxyWorker(ILogger<TcpProxyWorker> logger,
             
             if (!string.IsNullOrEmpty(cmd))
             {
+                int logicalSize = EstimateRespPayloadSize(buffer, bytesRead);
+
                 queue.Enqueue(new RequestContext
                 {
                     Command = cmd,
                     Key = key ?? "",
-                    PayloadSize = bytesRead
+                    PayloadSize = logicalSize // <--- Use the calculated logical size
                 });
             }
 
@@ -96,7 +124,7 @@ public class TcpProxyWorker(ILogger<TcpProxyWorker> logger,
 
     private async Task HandleDownstream(NetworkStream input, NetworkStream output, ConcurrentQueue<RequestContext> queue, CancellationToken ct)
     {
-        var buffer = new byte[8192];
+        var buffer = new byte[65536];
         int bytesRead;
 
         while ((bytesRead = await input.ReadAsync(buffer, ct)) > 0)
