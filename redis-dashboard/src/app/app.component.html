@@ -1,19 +1,34 @@
 <div class="container">
   <header>
     <div class="header-content">
-      <div>
-        <h1>🚀 RedisInsight Middleware</h1>
-        <p>Real-Time RESP Protocol Analysis</p>
+      <div class="brand-section">
+        <div class="logo-icon">🛡️</div>
+        <div>
+          <h1>Redis Analysis</h1>
+          <p>Deep Traffic Intelligence & Replay</p>
+        </div>
       </div>
 
-      <div class="filter-control">
-        <label for="startDate">Start from:</label>
-        <input type="datetime-local" id="startDate" [(ngModel)]="dashboard.filterDate" (change)="onFilterChange()" />
-        <button (click)="onFilterChange()">Refresh</button>
-      </div>
+      <div class="actions-toolbar">
+        
+        <div class="filter-group">
+          <label for="startDate">TIMELINE:</label>
+          <div class="date-input-wrapper">
+            <input type="datetime-local" id="startDate" 
+                   [(ngModel)]="dashboard.filterDate" 
+                   (change)="onFilterChange()" />
+          </div>
+        </div>
 
-      <div class="filter-control">
-        <button class="replay-trigger-btn" (click)="openReplayModal()">📼 Replay</button>
+        <div class="button-group">
+          <button class="refresh-btn" (click)="onFilterChange()" title="Reload Data">
+            <span>↻</span>
+          </button>
+          <button class="replay-trigger-btn" (click)="openReplayModal()">
+            <span>📼</span> Replay Traffic
+          </button>
+        </div>
+
       </div>
     </div>
   </header>
