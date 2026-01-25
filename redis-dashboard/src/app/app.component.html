@@ -11,6 +11,10 @@
         <input type="datetime-local" id="startDate" [(ngModel)]="dashboard.filterDate" (change)="onFilterChange()" />
         <button (click)="onFilterChange()">Refresh</button>
       </div>
+
+      <div class="filter-control">
+        <button class="replay-trigger-btn" (click)="openReplayModal()">📼 Replay</button>
+      </div>
     </div>
   </header>
 
@@ -272,6 +276,60 @@
       <canvas baseChart [data]="modalChartData" [options]="modalChartOptions" [plugins]="modalPlugins"
         [type]="modalChartType">
       </canvas>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="isReplayModalOpen" (click)="closeReplayModal()">
+  <div class="modal-content replay-modal" (click)="stopPropagation($event)">
+    
+    <div class="modal-header">
+      <div class="header-left">
+        <span class="header-icon">📼</span>
+        <h2>Traffic Replay Engine</h2>
+      </div>
+      <button class="close-btn" (click)="closeReplayModal()">×</button>
+    </div>
+
+    <div class="modal-body replay-body">
+      
+      <div class="form-group">
+        <label>From Time</label>
+        <input type="datetime-local" step="1" [(ngModel)]="replayConfig.from">
+      </div>
+      
+      <div class="form-group">
+        <label>To Time</label>
+        <input type="datetime-local" step="1" [(ngModel)]="replayConfig.to">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group host-group">
+          <label>Target Host</label>
+          <input type="text" [(ngModel)]="replayConfig.targetHost" placeholder="localhost">
+        </div>
+        <div class="form-group port-group">
+          <label>Port</label>
+          <input type="number" [(ngModel)]="replayConfig.targetPort" placeholder="6379">
+        </div>
+      </div>
+
+      <div class="form-group slider-group">
+        <div class="slider-header">
+          <label>Replay Speed</label>
+          <span class="speed-badge">{{replayConfig.speed}}x</span>
+        </div>
+        <input type="range" min="0.1" max="5" step="0.1" [(ngModel)]="replayConfig.speed">
+        <div class="speed-labels">
+          <span>Slow (0.1x)</span>
+          <span>Real-time (1x)</span>
+          <span>Fast (5x)</span>
+        </div>
+      </div>
+
+      <button class="replay-btn" (click)="startReplay()">
+        <span>▶</span> START REPLAY
+      </button>
     </div>
   </div>
 </div>

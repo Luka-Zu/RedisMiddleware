@@ -46,5 +46,9 @@ export class ApiService {
   public getKeyspace(isoDate: string): Observable<KeyNode> {
     return this.http.get<KeyNode>(`${this.baseUrl}/keyspace?from=${isoDate}`);
   }
+
+  public startReplay(config: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/../replay/start`, config); // Note: Adjust URL path
+  }
   
 }

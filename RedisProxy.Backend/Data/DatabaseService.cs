@@ -201,4 +201,15 @@ public class DatabaseService(IConfiguration config)
         return await connection.QueryAsync<string>(sql, new { Since = since });
     }
     
+    public async Task<IEnumerable<RequestLog>> GetRequestLogsRangeAsync(DateTime from, DateTime to)
+    {
+        await using var connection = new NpgsqlConnection(_connectionString);
+        var sql = @"
+            SELECT * FROM request_logs 
+            WHERE timestamp BETWEEN @From AND @To
+            ORDER BY timestamp ASC"; // Critical: Must be in order!
+
+        return await connection.QueryAsync<RequestLog>(sql, new { From = from, To = to });
+    }
+    
 }

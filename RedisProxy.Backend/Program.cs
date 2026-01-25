@@ -11,6 +11,7 @@ builder.Services.AddSingleton<DatabaseService>();
 builder.Services.AddSingleton<IRespParser, RespParser>();
 builder.Services.AddSingleton<IAdvisoryService, AdvisoryService>();
 builder.Services.AddSingleton<IKeyspaceService, KeyspaceService>();
+builder.Services.AddSingleton<IReplayService, ReplayService>();
 
 builder.Services.AddHostedService<TcpProxyWorker>();
 builder.Services.AddHostedService<RedisMonitorWorker>();

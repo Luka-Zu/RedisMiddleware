@@ -17,6 +17,34 @@ Chart.defaults.set('plugins.datalabels', { display: false });
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit, OnDestroy {
+
+  public isReplayModalOpen = false;
+  public replayConfig = {
+    from: new Date(Date.now() - 3600000).toISOString().slice(0, 16), // 1 hour ago
+    to: new Date().toISOString().slice(0, 16),
+    targetHost: 'localhost',
+    targetPort: 6379,
+    speed: 1.0
+  };
+
+  public openReplayModal() { this.isReplayModalOpen = true; }
+  public closeReplayModal() { this.isReplayModalOpen = false; }
+
+  public startReplay() {
+    const payload = {
+      ...this.replayConfig,
+      from: new Date(this.replayConfig.from).toISOString(),
+      to: new Date(this.replayConfig.to).toISOString()
+    };
+
+    this.dashboard.startReplay(payload).subscribe({
+      next: () => {
+        alert('Replay Started! Watch your Redis Monitor.');
+        this.closeReplayModal();
+      },
+      error: (err: any) => alert('Failed to start replay: ' + err.message)
+    });
+  }
   
   // --- UI STATE ---
   public isModalOpen = false;
@@ -145,5 +173,5 @@ export class AppComponent implements OnInit, OnDestroy {
   public closeAdvisory(alert: any) {
     this.dashboard.removeAdvisory(alert);
   }
-  
+
 }

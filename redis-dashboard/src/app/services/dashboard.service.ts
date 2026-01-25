@@ -85,6 +85,10 @@ export class DashboardService {
     this.subscribeToRealtimeEvents();
   }
 
+  public startReplay(config: any) {
+    return this.apiService.startReplay(config);
+  }
+
   public loadHistory() {
     if (!this.filterDate) return;
     const isoString = new Date(this.filterDate).toISOString();
@@ -95,6 +99,7 @@ export class DashboardService {
       data.forEach(metric => this.processMetric(metric, false));
       this.chartsUpdate$.next(true);
     });
+    
 
     // 2. Logs
     this.apiService.getRequestHistory(isoString).subscribe((data: RequestLog[]) => {
