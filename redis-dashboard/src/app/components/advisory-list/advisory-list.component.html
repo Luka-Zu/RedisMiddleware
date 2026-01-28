@@ -1,0 +1,26 @@
+<div class="advisory-container" *ngIf="dashboard.advisories.length > 0">
+  <div class="advisory-header">
+    <h2>🩺 Redis Anti-Pattern Detector</h2>
+    <span class="pulse-dot"></span>
+  </div>
+
+  <div class="advisory-list">
+    <div *ngFor="let alert of dashboard.advisories" class="alert-card" 
+         [class.critical]="alert.level === 'Critical'"
+         [class.warning]="alert.level === 'Warning'">
+
+      <span class="close-advisory-btn" (click)="closeAdvisory(alert)">×</span>
+      <div class="alert-icon">
+        {{ alert.level === 'Critical' ? '⛔' : '⚠️' }}
+      </div>
+
+      <div class="alert-content">
+        <div class="alert-top">
+          <span class="cmd-badge">{{ alert.command }}</span>
+          <span class="time">{{ alert.timestamp | date:'HH:mm:ss' }}</span>
+        </div>
+        <p class="message">{{ alert.message }}</p>
+      </div>
+    </div>
+  </div>
+</div>

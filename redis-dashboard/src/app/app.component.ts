@@ -170,8 +170,5 @@ export class AppComponent implements OnInit, OnDestroy {
     });
   }
 
-  public closeAdvisory(alert: any) {
-    this.dashboard.removeAdvisory(alert);
-  }
 
 }
