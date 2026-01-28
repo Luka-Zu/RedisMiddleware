@@ -280,7 +280,7 @@
 </div>
 
 <div class="modal-overlay" *ngIf="isModalOpen" (click)="closeModal()">
-  <div class="modal-content" (click)="stopPropagation($event)">
+  <div class="modal-content chart-modal-content" (click)="stopPropagation($event)">
 
     <div class="modal-header">
       <h2>{{ modalTitle }}</h2>
@@ -296,7 +296,7 @@
 </div>
 
 <div class="modal-overlay" *ngIf="isReplayModalOpen" (click)="closeReplayModal()">
-  <div class="modal-content replay-modal" (click)="stopPropagation($event)">
+  <div class="modal-content replay-modal-content" (click)="stopPropagation($event)">
     
     <div class="modal-header">
       <div class="header-left">
