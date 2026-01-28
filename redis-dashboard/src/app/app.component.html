@@ -1,37 +1,6 @@
 <div class="container">
-  <header>
-    <div class="header-content">
-      <div class="brand-section">
-        <div class="logo-icon">🛡️</div>
-        <div>
-          <h1>Redis Analysis</h1>
-          <p>Deep Traffic Intelligence & Replay</p>
-        </div>
-      </div>
-
-      <div class="actions-toolbar">
-        
-        <div class="filter-group">
-          <label for="startDate">TIMELINE:</label>
-          <div class="date-input-wrapper">
-            <input type="datetime-local" id="startDate" 
-                   [(ngModel)]="dashboard.filterDate" 
-                   (change)="onFilterChange()" />
-          </div>
-        </div>
-
-        <div class="button-group">
-          <button class="refresh-btn" (click)="onFilterChange()" title="Reload Data">
-            <span>↻</span>
-          </button>
-          <button class="replay-trigger-btn" (click)="openReplayModal()">
-            <span>📼</span> Replay Traffic
-          </button>
-        </div>
-
-      </div>
-    </div>
-  </header>
+  
+  <app-header (openReplay)="openReplayModal()"></app-header>
 
   <div class="advisory-container" *ngIf="dashboard.advisories.length > 0">
     <div class="advisory-header">
