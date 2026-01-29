@@ -1,276 +1,99 @@
-<div class="container">
-  
-  <app-header (openReplay)="openReplayModal()"></app-header>
-
-  <app-advisory-list></app-advisory-list>
-
-  <app-kpi-scorecards></app-kpi-scorecards>
-
-  <div class="chart-container">
-    <h2>Server Health & Analysis</h2>
-
-    <div class="charts-grid">
-
-      <div class="chart-card">
-        <h3>🔥 Hot Key Leaderboard</h3>
-
-        <div class="hot-keys-container">
-          <div class="list-header">
-            <span>Key Name</span>
-            <span>Hits</span>
-          </div>
-
-          <div class="list-body">
-            <div *ngFor="let item of dashboard.hotKeys; let i = index" class="list-item">
-
-              <div class="key-info">
-                <span class="rank">#{{ i + 1 }}</span>
-                <span class="key-name" title="{{ item.key }}">{{ item.key }}</span>
-              </div>
-
-              <div class="count-visual">
-                <span class="count">{{ item.count }}</span>
-                <div class="progress-bar" [style.width.%]="(item.count / (dashboard.hotKeys[0].count || 1)) * 100">
-                </div>
-              </div>
-            </div>
-
-            <div *ngIf="dashboard.hotKeys.length === 0" class="no-data-placeholder">
-              <p>No keys accessed yet</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="chart-card x-ray-card">
-        <h3>🔬 Keyspace X-Ray</h3>
-
-        <div class="x-ray-container">
-          <ng-container *ngTemplateOutlet="nodeTemplate; context:{ $implicit: dashboard.keyspaceRoot }">
-          </ng-container>
-        </div>
-
-        <ng-template #noData>
-          <div class="no-data-placeholder">
-            <p>Waiting for data...</p>
-          </div>
-        </ng-template>
-      </div>
-
-      <ng-template #nodeTemplate let-node>
-        <div class="tree-node" *ngIf="node">
-
-          <ng-container *ngFor="let child of node.children">
-
-            <div class="node-row">
-              <div class="node-info">
-                <span class="node-name">{{ child.name }}</span>
-                <span class="node-count">{{ child.value }}</span>
-              </div>
-
-              <div class="node-bar-bg">
-                <div class="node-bar-fill" [style.width.%]="(child.value / (node.value || 1)) * 100">
-                </div>
-              </div>
-            </div>
-
-            <div class="node-children" *ngIf="child.children && child.children.length > 0">
-              <ng-container *ngTemplateOutlet="nodeTemplate; context:{ $implicit: child }">
-              </ng-container>
-            </div>
-
-          </ng-container>
-        </div>
-      </ng-template>
-
-      <div class="chart-card">
-        <div class="card-header-row">
-          <h3>📊 Command Distribution</h3>
-          <span class="expand-icon">⤢</span>
-        </div>
-        <div class="chart-wrapper">
-
-          <ng-container *ngIf="dashboard.commandChartData.datasets[0].data.length > 0; else noData">
-            <canvas baseChart #pieChart="base-chart" [data]="dashboard.commandChartData" [options]="pieOptions"
-              [type]="'doughnut'">
-            </canvas>
-          </ng-container>
-
-          <ng-template #noData>
-            <div class="no-data-placeholder">
-              <div class="icon">💤</div>
-              <p>No traffic detected yet</p>
-              <span class="sub-text">Waiting for Redis commands...</span>
-            </div>
-          </ng-template>
-
-        </div>
-      </div>
-
-      <div class="chart-card clickable-chart"
-        (click)="openChartModal('CPU Usage (%)', dashboard.cpuChartData, commonOptions, 'line')">
-        <div class="card-header-row">
-          <h3>🔥 CPU Usage (%)</h3>
-          <span class="expand-icon">⤢</span>
-        </div>
-        <div class="chart-wrapper" (mouseleave)="chartMouseLeave()">
-          <canvas baseChart [data]="dashboard.cpuChartData" [options]="commonOptions" [type]="'line'">
-          </canvas>
-        </div>
-      </div>
-
-      <div class="chart-card clickable-chart"
-        (click)="openChartModal('Latency Distribution (ms)', dashboard.latencyChartData, commonOptions, 'line')">
-        <div class="card-header-row">
-          <h3>⏱️ Latency Distribution</h3>
-          <span class="expand-icon">⤢</span>
-        </div>
-        <div class="chart-wrapper" (mouseleave)="chartMouseLeave()">
-          <canvas baseChart [data]="dashboard.latencyChartData" [options]="commonOptions" [type]="'line'">
-          </canvas>
-        </div>
-      </div>
-
-      <div class="chart-card clickable-chart"
-        (click)="openChartModal('Memory Usage', dashboard.memoryChartData, commonOptions, 'line')">
-        <div class="card-header-row">
-          <h3>🧠 Memory (RSS vs Used)</h3>
-          <span class="expand-icon">⤢</span>
-        </div>
-        <div class="chart-wrapper" (mouseleave)="chartMouseLeave()">
-          <canvas baseChart [data]="dashboard.memoryChartData" [options]="commonOptions" [type]="'line'">
-          </canvas>
-        </div>
-      </div>
-
-      <div class="chart-card clickable-chart"
-        (click)="openChartModal('Network I/O', dashboard.netChartData, commonOptions, 'line')">
-        <div class="card-header-row">
-          <h3>🌐 Network I/O (KB/s)</h3>
-          <span class="expand-icon">⤢</span>
-        </div>
-        <div class="chart-wrapper" (mouseleave)="chartMouseLeave()">
-          <canvas baseChart [data]="dashboard.netChartData" [options]="commonOptions" [type]="'line'">
-          </canvas>
-        </div>
-      </div>
-
-      <div class="chart-card clickable-chart"
-        (click)="openChartModal('Cache Hits vs Misses', dashboard.hitChartData, commonOptions, 'line')">
-        <div class="card-header-row">
-          <h3>🎯 Cache Hits vs Misses</h3>
-          <span class="expand-icon">⤢</span>
-        </div>
-        <div class="chart-wrapper" (mouseleave)="chartMouseLeave()">
-          <canvas baseChart [data]="dashboard.hitChartData" [options]="commonOptions" [type]="'line'">
-          </canvas>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <div class="table-container">
-    <h2>Recent Traffic Inspection</h2>
-
-    <div class="table-scroll-area">
-      <table>
-        <thead>
-          <tr>
-            <th>Time</th>
-            <th>Command</th>
-            <th style="width: 40%">Key</th>
-            <th>Payload (Bytes)</th>
-            <th>Latency (ms)</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let log of dashboard.requestLogs" [class.error-row]="!log.isSuccess">
-            <td>{{ log.timestamp | date:'HH:mm:ss' }}</td>
-            <td><span class="badge">{{ log.command }}</span></td>
-            <td class="key-col" title="{{log.key}}">{{ log.key }}</td>
-            <td>{{ log.payloadSize }}</td>
-            <td>{{ log.latencyMs }}</td>
-            <td>
-              <span *ngIf="log.isHit" class="tag hit">HIT</span>
-              <span *ngIf="!log.isHit && log.command === 'GET'" class="tag miss">MISS</span>
-              <span *ngIf="!log.isSuccess" class="tag error">ERR</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-</div>
-
-<div class="modal-overlay" *ngIf="isModalOpen" (click)="closeModal()">
-  <div class="modal-content chart-modal-content" (click)="stopPropagation($event)">
-
-    <div class="modal-header">
-      <h2>{{ modalTitle }}</h2>
-      <button class="close-btn" (click)="closeModal()">×</button>
-    </div>
-
-    <div class="modal-body" (mouseleave)="chartMouseLeave()">
-      <canvas baseChart [data]="modalChartData" [options]="modalChartOptions" [plugins]="modalPlugins"
-        [type]="modalChartType">
-      </canvas>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" *ngIf="isReplayModalOpen" (click)="closeReplayModal()">
-  <div class="modal-content replay-modal-content" (click)="stopPropagation($event)">
+  <div class="container">
     
-    <div class="modal-header">
-      <div class="header-left">
-        <span class="header-icon">📼</span>
-        <h2>Traffic Replay Engine</h2>
+    <app-header (openReplay)="openReplayModal()"></app-header>
+
+    <app-advisory-list></app-advisory-list>
+
+    <app-kpi-scorecards></app-kpi-scorecards>
+
+    <app-server-health></app-server-health>
+
+    <div class="table-container">
+      <h2>Recent Traffic Inspection</h2>
+
+      <div class="table-scroll-area">
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Command</th>
+              <th style="width: 40%">Key</th>
+              <th>Payload (Bytes)</th>
+              <th>Latency (ms)</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let log of dashboard.requestLogs" [class.error-row]="!log.isSuccess">
+              <td>{{ log.timestamp | date:'HH:mm:ss' }}</td>
+              <td><span class="badge">{{ log.command }}</span></td>
+              <td class="key-col" title="{{log.key}}">{{ log.key }}</td>
+              <td>{{ log.payloadSize }}</td>
+              <td>{{ log.latencyMs }}</td>
+              <td>
+                <span *ngIf="log.isHit" class="tag hit">HIT</span>
+                <span *ngIf="!log.isHit && log.command === 'GET'" class="tag miss">MISS</span>
+                <span *ngIf="!log.isSuccess" class="tag error">ERR</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <button class="close-btn" (click)="closeReplayModal()">×</button>
     </div>
 
-    <div class="modal-body replay-body">
+  </div>
+
+
+  <div class="modal-overlay" *ngIf="isReplayModalOpen" (click)="closeReplayModal()">
+    <div class="modal-content replay-modal-content" (click)="stopPropagation($event)">
       
-      <div class="form-group">
-        <label>From Time</label>
-        <input type="datetime-local" step="1" [(ngModel)]="replayConfig.from">
-      </div>
-      
-      <div class="form-group">
-        <label>To Time</label>
-        <input type="datetime-local" step="1" [(ngModel)]="replayConfig.to">
+      <div class="modal-header">
+        <div class="header-left">
+          <span class="header-icon">📼</span>
+          <h2>Traffic Replay Engine</h2>
+        </div>
+        <button class="close-btn" (click)="closeReplayModal()">×</button>
       </div>
 
-      <div class="form-row">
-        <div class="form-group host-group">
-          <label>Target Host</label>
-          <input type="text" [(ngModel)]="replayConfig.targetHost" placeholder="localhost">
+      <div class="modal-body replay-body">
+        
+        <div class="form-group">
+          <label>From Time</label>
+          <input type="datetime-local" step="1" [(ngModel)]="replayConfig.from">
         </div>
-        <div class="form-group port-group">
-          <label>Port</label>
-          <input type="number" [(ngModel)]="replayConfig.targetPort" placeholder="6379">
+        
+        <div class="form-group">
+          <label>To Time</label>
+          <input type="datetime-local" step="1" [(ngModel)]="replayConfig.to">
         </div>
-      </div>
 
-      <div class="form-group slider-group">
-        <div class="slider-header">
-          <label>Replay Speed</label>
-          <span class="speed-badge">{{replayConfig.speed}}x</span>
+        <div class="form-row">
+          <div class="form-group host-group">
+            <label>Target Host</label>
+            <input type="text" [(ngModel)]="replayConfig.targetHost" placeholder="localhost">
+          </div>
+          <div class="form-group port-group">
+            <label>Port</label>
+            <input type="number" [(ngModel)]="replayConfig.targetPort" placeholder="6379">
+          </div>
         </div>
-        <input type="range" min="0.1" max="5" step="0.1" [(ngModel)]="replayConfig.speed">
-        <div class="speed-labels">
-          <span>Slow (0.1x)</span>
-          <span>Real-time (1x)</span>
-          <span>Fast (5x)</span>
-        </div>
-      </div>
 
-      <button class="replay-btn" (click)="startReplay()">
-        <span>▶</span> START REPLAY
-      </button>
+        <div class="form-group slider-group">
+          <div class="slider-header">
+            <label>Replay Speed</label>
+            <span class="speed-badge">{{replayConfig.speed}}x</span>
+          </div>
+          <input type="range" min="0.1" max="5" step="0.1" [(ngModel)]="replayConfig.speed">
+          <div class="speed-labels">
+            <span>Slow (0.1x)</span>
+            <span>Real-time (1x)</span>
+            <span>Fast (5x)</span>
+          </div>
+        </div>
+
+        <button class="replay-btn" (click)="startReplay()">
+          <span>▶</span> START REPLAY
+        </button>
+      </div>
     </div>
   </div>
-</div>

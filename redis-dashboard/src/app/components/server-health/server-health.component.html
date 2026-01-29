@@ -1,1 +1,187 @@
-<p>server-health works!</p>
+<div class="chart-container">
+  <h2>Server Health & Analysis</h2>
+
+  <div class="charts-grid">
+
+    <div class="chart-card">
+      <h3>🔥 Hot Key Leaderboard</h3>
+      <div class="hot-keys-container">
+        <div class="list-header">
+          <span>Key Name</span>
+          <span>Hits</span>
+        </div>
+        <div class="list-body">
+          <div *ngFor="let item of dashboard.hotKeys; let i = index" class="list-item">
+            <div class="key-info">
+              <span class="rank">#{{ i + 1 }}</span>
+              <span class="key-name" title="{{ item.key }}">{{ item.key }}</span>
+            </div>
+            <div class="count-visual">
+              <span class="count">{{ item.count }}</span>
+              <div class="progress-bar" 
+                   [style.width.%]="(item.count / (dashboard.hotKeys[0].count || 1)) * 100">
+              </div>
+            </div>
+          </div>
+          <div *ngIf="dashboard.hotKeys.length === 0" class="no-data-placeholder">
+            <p>No keys accessed yet</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-card x-ray-card">
+        <h3>🔬 Keyspace X-Ray</h3>
+        <div class="x-ray-container">
+          <ng-container *ngTemplateOutlet="nodeTemplate; context:{ $implicit: dashboard.keyspaceRoot }">
+          </ng-container>
+        </div>
+        <ng-template #noData>
+          <div class="no-data-placeholder">
+            <p>Waiting for data...</p>
+          </div>
+        </ng-template>
+      </div>
+
+      <ng-template #nodeTemplate let-node>
+        <div class="tree-node" *ngIf="node">
+          <ng-container *ngFor="let child of node.children">
+            <div class="node-row">
+              <div class="node-info">
+                <span class="node-name">{{ child.name }}</span>
+                <span class="node-count">{{ child.value }}</span>
+              </div>
+              <div class="node-bar-bg">
+                <div class="node-bar-fill" 
+                     [style.width.%]="(child.value / (node.value || 1)) * 100">
+                </div>
+              </div>
+            </div>
+            <div class="node-children" *ngIf="child.children && child.children.length > 0">
+              <ng-container *ngTemplateOutlet="nodeTemplate; context:{ $implicit: child }">
+              </ng-container>
+            </div>
+          </ng-container>
+        </div>
+      </ng-template>
+
+      <div class="chart-card">
+        <div class="card-header-row">
+           <h3>📊 Command Distribution</h3>
+           <span class="expand-icon">⤢</span>
+        </div>
+        <div class="chart-wrapper">
+          <ng-container *ngIf="dashboard.commandChartData.datasets[0].data.length > 0; else noData">
+            <canvas baseChart 
+              #pieChart="base-chart"
+              [data]="dashboard.commandChartData" 
+              [options]="pieOptions" 
+              [type]="'doughnut'">
+            </canvas>
+          </ng-container>
+          <ng-template #noData>
+            <div class="no-data-placeholder">
+              <div class="icon">💤</div>
+              <p>No traffic detected yet</p>
+              <span class="sub-text">Waiting for Redis commands...</span>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+
+      <div class="chart-card clickable-chart"
+        (click)="openChartModal('CPU Usage (%)', dashboard.cpuChartData, commonOptions, 'line')">
+        <div class="card-header-row">
+          <h3>🔥 CPU Usage (%)</h3>
+          <span class="expand-icon">⤢</span>
+        </div>
+        <div class="chart-wrapper" (mouseleave)="chartMouseLeave()">
+          <canvas baseChart 
+            [data]="dashboard.cpuChartData" 
+            [options]="commonOptions"
+            [type]="'line'">
+          </canvas>
+        </div>
+      </div>
+
+      <div class="chart-card clickable-chart"
+        (click)="openChartModal('Latency Distribution (ms)', dashboard.latencyChartData, commonOptions, 'line')">
+        <div class="card-header-row">
+          <h3>⏱️ Latency Distribution</h3>
+          <span class="expand-icon">⤢</span>
+        </div>
+        <div class="chart-wrapper" (mouseleave)="chartMouseLeave()">
+          <canvas baseChart 
+            [data]="dashboard.latencyChartData" 
+            [options]="commonOptions"
+            [type]="'line'">
+          </canvas>
+        </div>
+      </div>
+
+      <div class="chart-card clickable-chart"
+        (click)="openChartModal('Memory Usage', dashboard.memoryChartData, commonOptions, 'line')">
+        <div class="card-header-row">
+          <h3>🧠 Memory (RSS vs Used)</h3>
+          <span class="expand-icon">⤢</span>
+        </div>
+        <div class="chart-wrapper" (mouseleave)="chartMouseLeave()">
+          <canvas baseChart 
+            [data]="dashboard.memoryChartData" 
+            [options]="commonOptions"
+            [type]="'line'">
+          </canvas>
+        </div>
+      </div>
+
+      <div class="chart-card clickable-chart"
+        (click)="openChartModal('Network I/O', dashboard.netChartData, commonOptions, 'line')">
+        <div class="card-header-row">
+          <h3>🌐 Network I/O (KB/s)</h3>
+          <span class="expand-icon">⤢</span>
+        </div>
+        <div class="chart-wrapper" (mouseleave)="chartMouseLeave()">
+          <canvas baseChart 
+            [data]="dashboard.netChartData" 
+            [options]="commonOptions"
+            [type]="'line'">
+          </canvas>
+        </div>
+      </div>
+
+      <div class="chart-card clickable-chart"
+        (click)="openChartModal('Cache Hits vs Misses', dashboard.hitChartData, commonOptions, 'line')">
+        <div class="card-header-row">
+          <h3>🎯 Cache Hits vs Misses</h3>
+          <span class="expand-icon">⤢</span>
+        </div>
+        <div class="chart-wrapper" (mouseleave)="chartMouseLeave()">
+          <canvas baseChart 
+            [data]="dashboard.hitChartData" 
+            [options]="commonOptions"
+            [type]="'line'">
+          </canvas>
+        </div>
+      </div>
+
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="isModalOpen" (click)="closeModal()">
+  <div class="modal-content chart-modal-content" (click)="stopPropagation($event)">
+    
+    <div class="modal-header">
+      <h2>{{ modalTitle }}</h2>
+      <button class="close-btn" (click)="closeModal()">×</button>
+    </div>
+
+    <div class="modal-body chart-body" (mouseleave)="chartMouseLeave()">
+      <canvas baseChart 
+        [data]="modalChartData"
+        [options]="modalChartOptions"
+        [plugins]="modalPlugins"
+        [type]="modalChartType">
+      </canvas>
+    </div>
+  </div>
+</div>

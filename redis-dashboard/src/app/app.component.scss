@@ -18,55 +18,8 @@
 
 
 
-/* --- CHARTS GRID --- */
-.chart-container {
-  margin-bottom: 35px;
 
-  h2 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 20px;
-    color: #334155;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-}
 
-.charts-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); 
-  gap: 24px;
-}
-
-.chart-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-  display: flex;
-  flex-direction: column;
-
-  h3 {
-    margin-top: 0;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #475569;
-    border-bottom: 1px solid #f1f5f9;
-    padding-bottom: 12px;
-    margin-bottom: 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .chart-wrapper {
-    position: relative;
-    flex-grow: 1;
-    min-height: 220px;
-  }
-}
 
 /* Canvas override */
 canvas {
@@ -185,87 +138,7 @@ canvas {
   td { border-bottom-color: #fee2e2; }
 }
 
-.no-data-placeholder {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: #94a3b8;
-  text-align: center;
-  border: 2px dashed #e2e8f0;
-  border-radius: 8px;
-  margin: 10px;
-  background-color: #f8fafc;
-  min-height: 150px;
 
-  .icon { font-size: 2rem; margin-bottom: 8px; opacity: 0.5; }
-  p { margin: 0; font-weight: 600; }
-  .sub-text { font-size: 0.85rem; margin-top: 4px; opacity: 0.8; }
-}
-
-/* Hot Keys Container */
-.hot-keys-container {
-  display: flex;
-  flex-direction: column;
-  height: 250px;
-  overflow: hidden;
-}
-
-.list-header {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 4px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #94a3b8;
-  text-transform: uppercase;
-  border-bottom: 1px solid #e2e8f0;
-  margin-bottom: 8px;
-}
-
-.list-body {
-  flex-grow: 1;
-  overflow-y: auto;
-  padding-right: 4px;
-  &::-webkit-scrollbar { width: 4px; }
-  &::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
-}
-
-.list-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 6px;
-  border-bottom: 1px solid #f8fafc;
-  font-size: 0.9rem;
-  border-radius: 6px;
-
-  &:hover { background-color: #f8fafc; }
-}
-
-.key-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  max-width: 70%; 
-
-  .rank {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #cbd5e1;
-    min-width: 20px;
-  }
-
-  .key-name {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-family: 'JetBrains Mono', monospace;
-    color: #334155;
-    font-weight: 500;
-  }
-}
 
 .count-visual {
   display: flex;
@@ -290,20 +163,6 @@ canvas {
   }
 }
 
-/* --- CLICKABLE CHARTS --- */
-.chart-card.clickable-chart {
-  cursor: pointer;
-  transition: all 0.2s ease;
-  
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    border-color: #cbd5e1;
-    
-    .expand-icon { opacity: 1; }
-  }
-}
-
 .card-header-row {
   display: flex;
   justify-content: space-between;
@@ -325,26 +184,7 @@ canvas {
 
 
 
-/* --- KEYSPACE X-RAY STYLES --- */
-.x-ray-card {
-  grid-row: span 2; 
-}
 
-.x-ray-container {
-  overflow-y: auto;
-  flex-grow: 1;
-  padding-right: 8px;
-  font-size: 0.9rem;
-  
-  &::-webkit-scrollbar { width: 4px; }
-  &::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
-}
-
-.tree-node {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
 
 .node-row {
   margin-bottom: 4px;
@@ -437,33 +277,7 @@ canvas {
   }
 }
 
-/* --- SPECIFIC: CHART MODAL (The Big One) --- */
-.chart-modal-content {
-  width: 90vw;
-  height: 60vh;
-  max-width: 1600px;
 
-  .modal-body.chart-body {
-    flex-grow: 1;
-    position: relative;
-    width: 100%;
-    height: 100%;
-    padding: 20px;
-    background-color: #ffffff;
-    
-    /* Center the chart */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    /* CRITICAL FIX: Override the global canvas restriction */
-    canvas {
-      width: 100% !important;
-      height: 100% !important;
-      max-height: none !important; /* Remove the 300px limit from the dashboard */
-    }
-  }
-}
 
 /* --- SPECIFIC: REPLAY MODAL (The Small One) --- */
 .replay-modal-content {
