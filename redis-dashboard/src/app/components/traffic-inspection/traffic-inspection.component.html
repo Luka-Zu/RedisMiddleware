@@ -1,0 +1,32 @@
+<div class="table-container">
+  <h2>Recent Traffic Inspection</h2>
+
+  <div class="table-scroll-area">
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Command</th>
+          <th style="width: 40%">Key</th>
+          <th>Payload (Bytes)</th>
+          <th>Latency (ms)</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let log of dashboard.requestLogs" [class.error-row]="!log.isSuccess">
+          <td>{{ log.timestamp | date:'HH:mm:ss' }}</td>
+          <td><span class="badge">{{ log.command }}</span></td>
+          <td class="key-col" title="{{log.key}}">{{ log.key }}</td>
+          <td>{{ log.payloadSize }}</td>
+          <td>{{ log.latencyMs }}</td>
+          <td>
+            <span *ngIf="log.isHit" class="tag hit">HIT</span>
+            <span *ngIf="!log.isHit && log.command === 'GET'" class="tag miss">MISS</span>
+            <span *ngIf="!log.isSuccess" class="tag error">ERR</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

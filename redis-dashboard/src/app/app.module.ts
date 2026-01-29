@@ -9,6 +9,8 @@ import { HeaderComponent } from './components/header/header.component';
 import { AdvisoryListComponent } from './components/advisory-list/advisory-list.component';
 import { KpiScorecardsComponent } from './components/kpi-scorecards/kpi-scorecards.component';
 import { ServerHealthComponent } from './components/server-health/server-health.component';
+import { ReplayModalComponent } from './components/replay-modal/replay-modal.component';
+import { TrafficInspectionComponent } from './components/traffic-inspection/traffic-inspection.component';
 
 @NgModule({
   declarations: [
@@ -17,6 +19,8 @@ import { ServerHealthComponent } from './components/server-health/server-health.
     AdvisoryListComponent,
     KpiScorecardsComponent,
     ServerHealthComponent,
+    ReplayModalComponent,
+    TrafficInspectionComponent,
   ],
   imports: [
     BrowserModule,

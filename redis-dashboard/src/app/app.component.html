@@ -1,6 +1,6 @@
   <div class="container">
     
-    <app-header (openReplay)="openReplayModal()"></app-header>
+    <app-header (openReplay)="isReplayModalOpen = true"></app-header>
 
     <app-advisory-list></app-advisory-list>
 
@@ -8,92 +8,12 @@
 
     <app-server-health></app-server-health>
 
-    <div class="table-container">
-      <h2>Recent Traffic Inspection</h2>
-
-      <div class="table-scroll-area">
-        <table>
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Command</th>
-              <th style="width: 40%">Key</th>
-              <th>Payload (Bytes)</th>
-              <th>Latency (ms)</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let log of dashboard.requestLogs" [class.error-row]="!log.isSuccess">
-              <td>{{ log.timestamp | date:'HH:mm:ss' }}</td>
-              <td><span class="badge">{{ log.command }}</span></td>
-              <td class="key-col" title="{{log.key}}">{{ log.key }}</td>
-              <td>{{ log.payloadSize }}</td>
-              <td>{{ log.latencyMs }}</td>
-              <td>
-                <span *ngIf="log.isHit" class="tag hit">HIT</span>
-                <span *ngIf="!log.isHit && log.command === 'GET'" class="tag miss">MISS</span>
-                <span *ngIf="!log.isSuccess" class="tag error">ERR</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <app-traffic-inspection></app-traffic-inspection>
 
   </div>
 
 
-  <div class="modal-overlay" *ngIf="isReplayModalOpen" (click)="closeReplayModal()">
-    <div class="modal-content replay-modal-content" (click)="stopPropagation($event)">
-      
-      <div class="modal-header">
-        <div class="header-left">
-          <span class="header-icon">📼</span>
-          <h2>Traffic Replay Engine</h2>
-        </div>
-        <button class="close-btn" (click)="closeReplayModal()">×</button>
-      </div>
-
-      <div class="modal-body replay-body">
-        
-        <div class="form-group">
-          <label>From Time</label>
-          <input type="datetime-local" step="1" [(ngModel)]="replayConfig.from">
-        </div>
-        
-        <div class="form-group">
-          <label>To Time</label>
-          <input type="datetime-local" step="1" [(ngModel)]="replayConfig.to">
-        </div>
-
-        <div class="form-row">
-          <div class="form-group host-group">
-            <label>Target Host</label>
-            <input type="text" [(ngModel)]="replayConfig.targetHost" placeholder="localhost">
-          </div>
-          <div class="form-group port-group">
-            <label>Port</label>
-            <input type="number" [(ngModel)]="replayConfig.targetPort" placeholder="6379">
-          </div>
-        </div>
-
-        <div class="form-group slider-group">
-          <div class="slider-header">
-            <label>Replay Speed</label>
-            <span class="speed-badge">{{replayConfig.speed}}x</span>
-          </div>
-          <input type="range" min="0.1" max="5" step="0.1" [(ngModel)]="replayConfig.speed">
-          <div class="speed-labels">
-            <span>Slow (0.1x)</span>
-            <span>Real-time (1x)</span>
-            <span>Fast (5x)</span>
-          </div>
-        </div>
-
-        <button class="replay-btn" (click)="startReplay()">
-          <span>▶</span> START REPLAY
-        </button>
-      </div>
-    </div>
-  </div>
+<app-replay-modal 
+  [isOpen]="isReplayModalOpen" 
+  (close)="isReplayModalOpen = false">
+</app-replay-modal>

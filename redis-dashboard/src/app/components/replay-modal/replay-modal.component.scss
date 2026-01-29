@@ -1,0 +1,78 @@
+/* Base Modal Styles (Needed here too) */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background-color: rgba(15, 23, 42, 0.6); z-index: 2000;
+  display: flex; justify-content: center; align-items: center;
+  backdrop-filter: blur(4px); animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+  background: #ffffff; border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  display: flex; flex-direction: column; overflow: hidden;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+  .modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 24px; background-color: #ffffff; border-bottom: 1px solid #f1f5f9;
+    
+    .header-left { display: flex; align-items: center; gap: 10px; }
+    .header-icon { font-size: 1.5rem; }
+    h2 { margin: 0; color: #0f172a; font-size: 1.1rem; font-weight: 700; }
+
+    .close-btn {
+      background: transparent; border: 1px solid #e2e8f0; border-radius: 8px;
+      width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; color: #64748b; cursor: pointer; transition: all 0.2s;
+      &:hover { background-color: #f1f5f9; color: #ef4444; border-color: #cbd5e1; }
+    }
+  }
+}
+
+/* Specific Replay Styles */
+.replay-modal-content {
+  width: 95%; max-width: 480px;
+  height: auto; max-height: 90vh;
+
+  .modal-body.replay-body {
+    padding: 24px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+}
+
+/* Form Styles */
+.form-group {
+  display: flex; flex-direction: column; gap: 6px;
+  label { font-weight: 600; font-size: 0.85rem; color: #475569; margin-left: 2px; }
+  input[type="text"], input[type="number"], input[type="datetime-local"] { 
+    padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px;
+    font-family: inherit; font-size: 0.95rem; color: #334155; background: #fff;
+    outline: none; transition: all 0.2s; width: 100%; box-sizing: border-box;
+    &:focus { border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1); }
+  }
+}
+
+.form-row { display: flex; gap: 15px; .host-group { flex: 2; } .port-group { flex: 1; } }
+
+.slider-group {
+  margin-top: 5px; background: #f8fafc; padding: 15px;
+  border-radius: 8px; border: 1px solid #f1f5f9;
+  
+  .slider-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+  .speed-badge { background: #8b5cf6; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; }
+  input[type="range"] { width: 100%; accent-color: #8b5cf6; height: 6px; background: #e2e8f0; border-radius: 3px; cursor: pointer; }
+  .speed-labels { display: flex; justify-content: space-between; font-size: 0.7rem; color: #94a3b8; margin-top: 5px; font-weight: 500; }
+}
+
+.replay-btn {
+  margin-top: 10px; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: white; border: none; padding: 12px; border-radius: 8px;
+  font-weight: 700; font-size: 0.95rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(22, 163, 74, 0.3);
+  &:hover { transform: translateY(-1px); box-shadow: 0 6px 12px -1px rgba(22, 163, 74, 0.4); }
+  &:active { transform: translateY(0); }
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
