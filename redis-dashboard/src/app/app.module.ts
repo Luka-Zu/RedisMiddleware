@@ -7,12 +7,16 @@ import { AppComponent } from './app.component';
 import { FormsModule } from '@angular/forms';
 import { HeaderComponent } from './components/header/header.component';
 import { AdvisoryListComponent } from './components/advisory-list/advisory-list.component';
+import { KpiScorecardsComponent } from './components/kpi-scorecards/kpi-scorecards.component';
+import { ServerHealthComponent } from './components/server-health/server-health.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     HeaderComponent,
     AdvisoryListComponent,
+    KpiScorecardsComponent,
+    ServerHealthComponent,
   ],
   imports: [
     BrowserModule,

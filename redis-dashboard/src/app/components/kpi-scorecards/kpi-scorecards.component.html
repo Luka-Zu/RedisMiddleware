@@ -1,0 +1,20 @@
+<div class="scorecards">
+  <div class="card">
+    <h3>OPS / Sec</h3>
+    <div class="value">{{ dashboard.currentOpsPerSec }}</div>
+  </div>
+  <div class="card">
+    <h3>Clients</h3>
+    <div class="value">{{ dashboard.connectedClients }}</div>
+  </div>
+  <div class="card">
+    <h3>Frag Ratio</h3>
+    <div class="value" [class.status-warn]="dashboard.fragmentationRatio > 1.5">
+      {{ dashboard.fragmentationRatio | number:'1.2-2' }}
+    </div>
+  </div>
+  <div class="card">
+    <h3>Evicted Keys</h3>
+    <div class="value">{{ dashboard.evictedKeys }}</div>
+  </div>
+</div>
