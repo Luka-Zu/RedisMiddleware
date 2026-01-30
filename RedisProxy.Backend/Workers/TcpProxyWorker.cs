@@ -24,9 +24,9 @@ public class TcpProxyWorker : BackgroundService
     private readonly IKeyspaceService _keyspaceService;
     private readonly IHubContext<MetricsHub, IMetricsClient> _hub;
 
+    private readonly string _remoteHost;
     private const int LocalPort = 6380;
     private const int RemotePort = 6379;
-    private const string RemoteHost = "127.0.0.1";
     private const int BufferSize = 65536;
 
     // OPTIMIZATION: Use Channel instead of ConcurrentQueue for efficient buffering
@@ -37,7 +37,8 @@ public class TcpProxyWorker : BackgroundService
         DatabaseService db,
         IAdvisoryService advisoryService,
         IKeyspaceService keyspaceService,
-        IHubContext<MetricsHub, IMetricsClient> hub)
+        IHubContext<MetricsHub, IMetricsClient> hub,
+        IConfiguration config)
     {
         _logger = logger;
         _parser = parser;
@@ -52,6 +53,8 @@ public class TcpProxyWorker : BackgroundService
             SingleReader = true, // We have one flusher loop
             SingleWriter = false // Multiple client connections write to it
         });
+        
+        _remoteHost = config["RedisSettings:Host"] ?? "127.0.0.1";
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -109,7 +112,7 @@ public class TcpProxyWorker : BackgroundService
                 client.NoDelay = true; 
                 redis.NoDelay = true;
 
-                await redis.ConnectAsync(RemoteHost, RemotePort, ct);
+                await redis.ConnectAsync(_remoteHost, RemotePort, ct);
                 
                 await using var clientStream = client.GetStream();
                 await using var redisStream = redis.GetStream();

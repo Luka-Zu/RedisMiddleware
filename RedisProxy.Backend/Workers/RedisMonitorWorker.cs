@@ -10,9 +10,9 @@ using Metric;
 
 public class RedisMonitorWorker(ILogger<RedisMonitorWorker> logger, 
     DatabaseService db,
-    IHubContext<MetricsHub, IMetricsClient> hub) : BackgroundService
+    IHubContext<MetricsHub, IMetricsClient> hub, IConfiguration config) : BackgroundService
 {
-    private const string RemoteHost = "127.0.0.1";
+    private readonly string _remoteHost = config["RedisSettings:Host"] ?? "127.0.0.1";
     private const int RemotePort = 6379;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -45,7 +45,7 @@ public class RedisMonitorWorker(ILogger<RedisMonitorWorker> logger,
     private async Task<ServerMetricLog?> FetchRedisInfoAsync()
     {
         using var client = new TcpClient();
-        await client.ConnectAsync(RemoteHost, RemotePort);
+        await client.ConnectAsync(_remoteHost, RemotePort);
         using var stream = client.GetStream();
 
         var cmdBytes = Encoding.UTF8.GetBytes("INFO\r\n");

@@ -41,7 +41,7 @@ services:
     environment:
       # Override appsettings.json to talk to containers by name
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=redis_metrics_db;Username=postgres;Password=password"
-      RedisSettings__Host: "redis" # Your C# code must read this
+      RedisSettings__Host: "redis_thesis"
     ports:
       - "5000:8080"  # Map internal .NET port 8080 to host 5000
       - "6380:6380"  # The Proxy Port
