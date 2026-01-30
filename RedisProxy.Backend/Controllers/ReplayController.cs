@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RedisProxy.Backend.DTOs;
 using RedisProxy.Backend.Services;
@@ -6,6 +7,7 @@ namespace RedisProxy.Backend.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ReplayController(IReplayService replayService) : ControllerBase
 {
     

@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { NgChartsModule } from 'ng2-charts';
 
 import { AppComponent } from './app.component';
@@ -11,6 +11,10 @@ import { KpiScorecardsComponent } from './components/kpi-scorecards/kpi-scorecar
 import { ServerHealthComponent } from './components/server-health/server-health.component';
 import { ReplayModalComponent } from './components/replay-modal/replay-modal.component';
 import { TrafficInspectionComponent } from './components/traffic-inspection/traffic-inspection.component';
+import { LoginComponent } from './components/login/login.component';
+import { AuthInterceptor } from './auth.interceptor';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { AppRoutingModule } from './app-routing.module';
 
 @NgModule({
   declarations: [
@@ -21,14 +25,21 @@ import { TrafficInspectionComponent } from './components/traffic-inspection/traf
     ServerHealthComponent,
     ReplayModalComponent,
     TrafficInspectionComponent,
+    LoginComponent,
+    DashboardComponent,
   ],
   imports: [
     BrowserModule,
     HttpClientModule,
+    AppRoutingModule,
     NgChartsModule,
     FormsModule
   ],
-  providers: [],
+  providers: [{
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true // This is important! It allows multiple interceptors to exist.
+    }],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

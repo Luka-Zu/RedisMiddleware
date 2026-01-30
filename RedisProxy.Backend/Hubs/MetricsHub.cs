@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
 namespace RedisProxy.Backend.Hubs;
 
+[Authorize]
 public class MetricsHub : Hub<IMetricsClient>
 {
     

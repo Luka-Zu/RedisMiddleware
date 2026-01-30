@@ -22,7 +22,8 @@ export class SignalrService {
       .withUrl('http://localhost:5000/hubs/metrics', {
         // Important for CORS:
         skipNegotiation: true,
-        transport: signalR.HttpTransportType.WebSockets
+        transport: signalR.HttpTransportType.WebSockets,
+        accessTokenFactory: () => localStorage.getItem('jwt_token') || ''
       })
       .withAutomaticReconnect()
       .build();
