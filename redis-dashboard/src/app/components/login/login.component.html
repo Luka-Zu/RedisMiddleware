@@ -1,0 +1,46 @@
+<div class="d-flex justify-content-center align-items-center vh-100 bg-light">
+  <div class="card shadow-sm p-4" style="width: 400px;">
+    <div class="card-body">
+      <h3 class="card-title text-center mb-4">RedisGuard Login</h3>
+      
+      <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+        {{ errorMessage }}
+      </div>
+
+      <form (ngSubmit)="onSubmit()">
+        <div class="mb-3">
+          <label for="username" class="form-label">Username</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            id="username" 
+            [(ngModel)]="username" 
+            name="username" 
+            required 
+            autofocus>
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input 
+            type="password" 
+            class="form-control" 
+            id="password" 
+            [(ngModel)]="password" 
+            name="password" 
+            required>
+        </div>
+
+        <div class="d-grid gap-2">
+          <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+            <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            {{ isLoading ? 'Logging in...' : 'Sign In' }}
+          </button>
+        </div>
+      </form>
+    </div>
+    <div class="card-footer text-center text-muted mt-3">
+      <small>Use admin / admin123 (or your configured creds)</small>
+    </div>
+  </div>
+</div>
