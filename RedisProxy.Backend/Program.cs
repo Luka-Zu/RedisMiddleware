@@ -47,7 +47,6 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
-// 1. Services
 builder.Services.AddSingleton<DatabaseService>();
 builder.Services.AddSingleton<IRespParser, RespParser>();
 builder.Services.AddSingleton<IAdvisoryService, AdvisoryService>();
@@ -86,7 +85,6 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowAngular");
 app.UseAuthorization();
 
-// 3. Map Endpoints
 app.MapControllers();
 app.MapHub<MetricsHub>("/hubs/metrics");
 

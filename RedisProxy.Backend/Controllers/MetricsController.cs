@@ -54,7 +54,6 @@ public class MetricsController(DatabaseService dbService, IKeyspaceService keysp
     [HttpGet("commands/stats")]
     public async Task<IActionResult> GetCommandStats([FromQuery] DateTime from)
     {
-        // Safety check: if 'from' is default, use 1 hour ago
         if (from == default) from = DateTime.UtcNow.AddHours(-1);
 
         var stats = await dbService.GetCommandStatsAsync(from);
@@ -64,7 +63,6 @@ public class MetricsController(DatabaseService dbService, IKeyspaceService keysp
     [HttpGet("keys/hot")]
     public async Task<IActionResult> GetHotKeys([FromQuery] DateTime from)
     {
-        // Default to 1 hour ago if no time provided
         if (from == default) from = DateTime.UtcNow.AddHours(-1);
     
         var stats = await dbService.GetHotKeysAsync(from);
@@ -74,7 +72,6 @@ public class MetricsController(DatabaseService dbService, IKeyspaceService keysp
     [HttpGet("keyspace")]
     public async Task<IActionResult> GetKeyspace([FromQuery] DateTime? from)
     {
-        // Default to 1 hour if not provided
         var timeWindow = from ?? DateTime.UtcNow.AddHours(-1);
         
         if (timeWindow.Kind == DateTimeKind.Unspecified)

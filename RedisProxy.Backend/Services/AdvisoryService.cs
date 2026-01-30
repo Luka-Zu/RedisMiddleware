@@ -1,15 +1,12 @@
-using RedisProxy.Backend.Metric;
 using RedisProxy.Backend.MetricModels;
 
 namespace RedisProxy.Backend.Services;
 
 public class AdvisoryService : IAdvisoryService
 {
-    // --- THRESHOLDS ---
     private const int LargePayloadThreshold = 50000; // 50KB
     private const double HighLatencyThresholdMs = 50.0; // 50ms warning
 
-    // --- RULES: Blocking Commands ---
     private static readonly HashSet<string> BlockingCommands = new(StringComparer.OrdinalIgnoreCase)
     {
         "KEYS", "FLUSHALL", "FLUSHDB", "SAVE"
@@ -19,7 +16,6 @@ public class AdvisoryService : IAdvisoryService
     {
         var advisories = new List<Advisory>();
 
-        // Rule 1: The Thread Blocker (Critical)
         if (BlockingCommands.Contains(log.Command))
         {
             advisories.Add(new Advisory
@@ -30,7 +26,6 @@ public class AdvisoryService : IAdvisoryService
             });
         }
 
-        // Rule 2: The Network Hog (Warning)
         if (log.PayloadSize > LargePayloadThreshold)
         {
             advisories.Add(new Advisory
@@ -41,7 +36,6 @@ public class AdvisoryService : IAdvisoryService
             });
         }
 
-        // Rule 3: Latency Spike (Warning)
         if (log.LatencyMs > HighLatencyThresholdMs)
         {
             advisories.Add(new Advisory
@@ -52,7 +46,6 @@ public class AdvisoryService : IAdvisoryService
             });
         }
         
-        // NEW 4: Using SELECT
         if (log.Command.ToUpper() == "SELECT" && log.Key != "0") 
         {
             advisories.Add(new Advisory
@@ -63,7 +56,6 @@ public class AdvisoryService : IAdvisoryService
             });
         }
         
-        // Rule 5: setting without ttl
         if (log.Command.ToUpper() == "SET")
         {
             bool hasTTL = rawContent.Contains("EX", StringComparison.OrdinalIgnoreCase) || 
@@ -80,11 +72,8 @@ public class AdvisoryService : IAdvisoryService
             }
         }
         
-        // RULE 6: JSON Blob in String
         if (log.Command.ToUpper() == "SET")
         {
-            // Heuristic: Looks like JSON object "{" ... "}"
-            // We verify it starts/ends with braces and contains at least one colon
             var val = rawContent.Trim();
             if (val.Contains("{") && val.Contains("}") && val.Contains(":"))
             {

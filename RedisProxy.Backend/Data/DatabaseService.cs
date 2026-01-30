@@ -1,4 +1,3 @@
-using RedisProxy.Backend.Metric;
 using Npgsql;
 using Dapper;
 using RedisProxy.Backend.MetricModels;

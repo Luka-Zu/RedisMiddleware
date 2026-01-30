@@ -5,10 +5,8 @@ namespace RedisProxy.Backend.Services;
 
 public interface IKeyspaceService
 {
-    // Now returns a Task because it needs to query DB
     Task<KeyNode> GetKeyspaceSnapshotAsync(DateTime since);
     
-    // We keep this helper public if we want to use it for real-time incremental updates later
     KeyNode BuildTree(IEnumerable<string> keys); 
 }
 
@@ -16,10 +14,8 @@ public class KeyspaceService(DatabaseService db) : IKeyspaceService
 {
     public async Task<KeyNode> GetKeyspaceSnapshotAsync(DateTime since)
     {
-        // 1. Get raw keys from DB based on time window
         var keys = await db.GetKeysSinceAsync(since);
 
-        // 2. Build tree on the fly (Stateless)
         return BuildTree(keys);
     }
 
@@ -29,7 +25,6 @@ public class KeyspaceService(DatabaseService db) : IKeyspaceService
 
         foreach (var key in keys)
         {
-            // Split by common delimiters
             var parts = key.Split(new[] { ':', '/', '_' }, StringSplitOptions.RemoveEmptyEntries);
             var currentLevel = root;
 
@@ -44,7 +39,7 @@ public class KeyspaceService(DatabaseService db) : IKeyspaceService
                 }
                 
                 node.Count++;
-                currentLevel = node; // Move down
+                currentLevel = node;
             }
         }
 

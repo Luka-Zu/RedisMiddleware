@@ -1,13 +1,12 @@
 using Microsoft.AspNetCore.SignalR;
 using RedisProxy.Backend.Hubs;
+using RedisProxy.Backend.MetricModels;
 using RedisProxy.Backend.Services;
 
 namespace RedisProxy.Backend.Workers;
 using System.Net.Sockets;
 using System.Text;
 using Data;
-using Metric;
-
 
 public class RedisMonitorWorker(ILogger<RedisMonitorWorker> logger, 
     DatabaseService db,
@@ -18,7 +17,6 @@ public class RedisMonitorWorker(ILogger<RedisMonitorWorker> logger,
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // Wait for DB init
         await Task.Delay(2000, stoppingToken);
 
         while (!stoppingToken.IsCancellationRequested)
@@ -38,7 +36,6 @@ public class RedisMonitorWorker(ILogger<RedisMonitorWorker> logger,
                 logger.LogError($"Failed to collect Redis stats: {ex.Message}");
             }
 
-            // Poll every 5 seconds
             await Task.Delay(5000, stoppingToken);
         }
     }

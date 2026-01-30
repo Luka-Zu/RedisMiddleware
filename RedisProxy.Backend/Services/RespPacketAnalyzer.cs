@@ -1,7 +1,6 @@
 using System.Buffers.Text;
-using System.Text;
 
-namespace RedisProxy.Backend.Workers;
+namespace RedisProxy.Backend.Services;
 
 public static class RespPacketAnalyzer
 {

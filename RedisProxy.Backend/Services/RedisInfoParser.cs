@@ -1,4 +1,4 @@
-using RedisProxy.Backend.Metric;
+using RedisProxy.Backend.MetricModels;
 
 namespace RedisProxy.Backend.Services;
 

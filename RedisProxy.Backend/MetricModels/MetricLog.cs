@@ -1,4 +1,4 @@
-namespace RedisProxy.Backend.Metric;
+namespace RedisProxy.Backend.MetricModels;
 
 public class ServerMetricLog
 {

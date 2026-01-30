@@ -8,7 +8,6 @@ using System.Threading.Channels;
 using Microsoft.AspNetCore.SignalR;
 using RedisProxy.Backend.Data;
 using RedisProxy.Backend.Hubs;
-using RedisProxy.Backend.Metric;
 using RedisProxy.Backend.MetricModels;
 using RedisProxy.Backend.RespParser;
 using RedisProxy.Backend.Services;
@@ -184,18 +183,16 @@ public class TcpProxyWorker : BackgroundService
         }
     }
 
-    // The Consumer Loop
     private async Task ProcessLogsAsync(CancellationToken ct)
     {
-        var batch = new List<RequestLog>(500); // Pre-allocate capacity
+        var batch = new List<RequestLog>(500);
 
-        // Smart Batching Loop
         while (await _logChannel.Reader.WaitToReadAsync(ct))
         {
             while (_logChannel.Reader.TryRead(out var log))
             {
                 batch.Add(log);
-                if (batch.Count >= 100) break; // Process in smaller chunks for responsiveness
+                if (batch.Count >= 100) break;
             }
 
             if (batch.Count > 0)
@@ -204,8 +201,6 @@ public class TcpProxyWorker : BackgroundService
                 batch.Clear();
             }
             
-            // Small safeguard to prevent CPU spinning if data comes in insanely fast
-            // though Channel usually handles backpressure well.
             if (batch.Count == 0) await Task.Delay(100, ct); 
         }
     }
@@ -214,13 +209,10 @@ public class TcpProxyWorker : BackgroundService
     {
         try
         {
-            // 1. Save to DB
             await _db.SaveRequestLogsAsync(logs);
 
-            // 2. Broadcast Logs to UI
             await _hub.Clients.All.ReceiveRequestLogUpdate(logs);
 
-            // 3. Analyze for Advisories
             var newAdvisories = new List<Advisory>();
             foreach (var log in logs)
             {
@@ -231,8 +223,6 @@ public class TcpProxyWorker : BackgroundService
                 await _hub.Clients.All.ReceiveAdvisories(newAdvisories);
             }
 
-            // 4. Update Keyspace (Trigger UI refresh logic)
-            // Simplified for thesis: Just broadcast the keys that changed
             var keys = logs.Select(l => l.Key).Where(k => !string.IsNullOrEmpty(k)).Distinct();
             if (keys.Any())
             {
