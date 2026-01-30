@@ -48,7 +48,6 @@ public class KeyspaceService(DatabaseService db) : IKeyspaceService
             }
         }
 
-        // Convert to the Clean KeyNode model for Frontend
         return new KeyNode
         {
             Name = "root",
@@ -57,7 +56,6 @@ public class KeyspaceService(DatabaseService db) : IKeyspaceService
         };
     }
 
-    // Internal helper class for construction
     private class NodeData
     {
         public string Segment = "";
