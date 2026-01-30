@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+  # --- INFRASTRUCTURE ---
   redis:
     image: redis:alpine
     container_name: redis_thesis
@@ -31,6 +32,31 @@ services:
       - "5050:80"
     depends_on:
       - postgres
+
+  # --- YOUR APPLICATION ---
+  backend:
+    build:
+      context: ./RedisProxy.Backend # Point to your C# folder
+    container_name: backend_guard
+    environment:
+      # Override appsettings.json to talk to containers by name
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=redis_metrics_db;Username=postgres;Password=password"
+      RedisSettings__Host: "redis" # Your C# code must read this
+    ports:
+      - "5000:8080"  # Map internal .NET port 8080 to host 5000
+      - "6380:6380"  # The Proxy Port
+    depends_on:
+      - redis
+      - postgres
+
+  frontend:
+    build:
+      context: ./redis-dashboard # Point to your Angular folder
+    container_name: frontend_guard
+    ports:
+      - "4200:80" # Map internal Nginx port 80 to host 4200
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:
