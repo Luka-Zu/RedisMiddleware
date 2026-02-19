@@ -78,8 +78,14 @@ export class DashboardService {
   public pieChartUpdate$ = new BehaviorSubject<boolean>(false);
 
   constructor(private apiService: ApiService, private signalRService: SignalrService) {}
-
+private isInitialized = false;
   public init() {
+    if (this.isInitialized) {
+        console.log('DashboardService already initialized, skipping...');
+        return; 
+    }
+    
+    this.isInitialized = true;
     this.signalRService.startConnection();
     this.loadHistory();
     this.subscribeToRealtimeEvents();
@@ -211,7 +217,7 @@ export class DashboardService {
         // 4. Update Latency Window
         newLogs.forEach(log => this.latencyWindow.push(log.latencyMs));
         if (this.latencyWindow.length > 200) {
-        this.latencyWindow = this.latencyWindow.slice(this.latencyWindow.length - 200);
+          this.latencyWindow = this.latencyWindow.slice(this.latencyWindow.length - 200);
         }
 
     
